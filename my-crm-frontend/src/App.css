@@ -1,0 +1,148 @@
+:root {
+  --bg-color: #f4f6f9;
+  --panel-color: #ffffff;
+  --primary-color: #4f46e5;
+  --text-color: #1f2937;
+  --border-color: #e5e7eb;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  font-family: 'Inter', sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+.crm-container {
+  max-width: 1100px;
+  margin: 40px auto;
+  padding: 20px;
+}
+
+.crm-header h1 {
+  font-size: 28px;
+  font-weight: 700;
+  text-align: center;
+  color: #111827;
+  margin-bottom: 30px;
+}
+
+/* СТИЛИ ФОРМЫ */
+.client-form {
+  background: var(--panel-color);
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+  border: 1px solid var(--border-color);
+  margin-bottom: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.client-form h3 {
+  margin: 0 0 5px 0;
+  color: #374151;
+}
+
+.client-form input {
+  padding: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 15px;
+  outline: none;
+  transition: 0.2s;
+}
+
+.client-form input:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.client-form button {
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 14px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.client-form button:hover {
+  background: #4338ca;
+}
+
+/* СТИЛИ СЕТКИ КАРТОЧЕК */
+.clients-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.client-card {
+  background: var(--panel-color);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 20px;
+  position: relative;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+  transition: 0.3s;
+}
+
+.client-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
+}
+
+.btn-delete {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: none;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  opacity: 0.4;
+  transition: 0.2s;
+}
+
+.btn-delete:hover {
+  opacity: 1;
+  transform: scale(1.2);
+}
+
+.client-card h3 {
+  margin: 0 0 15px 0;
+  font-size: 18px;
+  color: #111827;
+}
+
+.client-card p {
+  margin: 8px 0;
+  font-size: 14px;
+  color: #4b5563;
+}
+
+.status-badge {
+  background: #e0e7ff;
+  color: #4338ca;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.no-data {
+  text-align: center;
+  color: #6b7280;
+  grid-column: 1 / -1;
+  padding: 40px;
+  background: #fff;
+  border-radius: 12px;
+  border: 1px dashed var(--border-color);
+}

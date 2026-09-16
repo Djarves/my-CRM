@@ -1,0 +1,20 @@
+### 1. Получить всех клиентов
+GET http://localhost:3000/api/clients
+
+###
+
+### 2. Добавить нового клиента (Агентство)
+POST http://localhost:3000/api/clients
+Content-Type: application/json
+
+{
+    "name": "ИП Петров",
+    "status": "В работе",
+    "budget": 75000,
+    "phone": "+79990001122"
+}
+
+###
+
+### 3. Удалить клиента по ID (удалим клиента с ID 1)
+DELETE http://localhost:3000/api/clients/1
