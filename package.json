@@ -3,10 +3,9 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon server.js",
-    "start": "node server.js"
+   "scripts": {
+    "start": "node --watch server.js",
+    "dev": "npx concurrently \"node --watch server.js\" \"cd my-crm-frontend && npm run dev\""
   },
   "keywords": [],
   "author": "",
@@ -19,6 +18,7 @@
     "pg": "^8.23.0"
   },
   "devDependencies": {
+    "concurrently": "^10.0.5",
     "nodemon": "^3.1.14"
   }
 }
