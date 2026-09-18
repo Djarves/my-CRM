@@ -1,182 +1,442 @@
 import { useState, useEffect } from 'react';
+
 import './App.css';
 
+// Импортируем функции для работы с backend.
+import {
+  getLeads,
+  createLead,
+  updateLeadStatus,
+} from './services/api';
+
+
 function App() {
-  const [clients, setClients] = useState([]);
-  // Состояния для полей формы нового клиента
+
+  // Здесь теперь хранятся НЕ clients,
+  // а leads из нашей новой системы.
+  const [leads, setLeads] = useState([]);
+
+
+  // Поля формы.
   const [name, setName] = useState('');
   const [budget, setBudget] = useState('');
   const [phone, setPhone] = useState('');
 
-  // 1. Функция загрузки клиентов с бэкенда
-  const fetchClients = async () => {
-    try {
-      const response = await fetch('http://localhost:3000/api/clients');
-      const data = await response.json();
-      setClients(data);
-    } catch (err) {
-      console.error('Ошибка при получении данных:', err);
-    }
-  };
 
+  // ==================================================
+  // ЗАГРУЗКА ЛИДОВ
+  // ==================================================
+
+  async function fetchLeads() {
+
+    try {
+
+      // Получаем лидов через api.js.
+      const data = await getLeads();
+
+      // Сохраняем их в React state.
+      setLeads(data);
+
+    } catch (error) {
+
+      console.error(
+        'Ошибка загрузки лидов:',
+        error
+      );
+    }
+  }
+
+
+  // Загружаем лидов,
+  // когда CRM впервые открывается.
   useEffect(() => {
-    fetchClients();
+
+    fetchLeads();
+
   }, []);
 
-  // 2. Функция отправки формы (Добавление клиента)
-  const handleAddClient = async (e) => {
-    e.preventDefault(); // Отменяем перезагрузку страницы при отправке формы
-    if (!name) return alert('Имя клиента обязательно!');
+
+  // ==================================================
+  // СОЗДАНИЕ ЛИДА
+  // ==================================================
+
+  async function handleAddLead(event) {
+
+    // Запрещаем браузеру
+    // перезагрузить страницу.
+    event.preventDefault();
+
+
+    // Проверяем имя.
+    if (!name.trim()) {
+
+      alert('Имя клиента обязательно!');
+
+      return;
+    }
+
 
     try {
-      const response = await fetch('http://localhost:3000/api/clients', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, budget: Number(budget) || 0, phone }),
+
+      // Создаём новый лид.
+      await createLead({
+
+        name,
+
+        phone,
+
+        budget: Number(budget) || 0,
+
+        // Пока тестовые значения.
+        // Позже сюда придут данные
+        // из нашего конфигуратора.
+        businessType: 'Не указан',
+
+        goal: 'Не указана',
+
+        description: '',
+
+        options: {},
+
+        source: 'crm',
       });
 
-      if (response.ok) {
-        // Очищаем форму после успешной отправки
-        setName('');
-        setBudget('');
-        setPhone('');
-        fetchClients(); // Обновляем список на экране, перечитывая БД
-      }
-    } catch (err) {
-      console.error('Ошибка при добавлении клиента:', err);
-    }
-  };
 
-  // 3. Функция удаления клиента
-  const handleDeleteClient = async (id) => {
+      // Очищаем форму.
+      setName('');
+      setBudget('');
+      setPhone('');
+
+
+      // Снова получаем данные из БД.
+      await fetchLeads();
+
+
+    } catch (error) {
+
+      console.error(
+        'Ошибка создания лида:',
+        error
+      );
+
+      alert(
+        'Не удалось создать лида'
+      );
+    }
+  }
+
+
+  // ==================================================
+  // ПЕРЕМЕЩЕНИЕ ПО ВОРОНКЕ
+  // ==================================================
+
+  async function handleMoveLead(
+    id,
+    currentStatus
+  ) {
+
+    // Определяем следующий статус.
+    let nextStatus;
+
+
+    if (currentStatus === 'NEW') {
+      nextStatus = 'CONTACTED';
+    }
+
+    if (currentStatus === 'CONTACTED') {
+      nextStatus = 'DISCUSSION';
+    }
+
+    if (currentStatus === 'DISCUSSION') {
+      nextStatus = 'OFFER';
+    }
+
+    if (currentStatus === 'OFFER') {
+      nextStatus = 'WON';
+    }
+
+
+    // Если следующего статуса нет,
+    // ничего не делаем.
+    if (!nextStatus) {
+      return;
+    }
+
+
     try {
-      const response = await fetch(`http://localhost:3000/api/clients/${id}`, {
-        method: 'DELETE',
-      });
-      if (response.ok) {
-        fetchClients(); // Обновляем список
-      }
-    } catch (err) {
-      console.error('Ошибка при удалении:', err);
-    }
-  }; // <-- ВОТ ЭТУ СКОБКУ МЫ ДОБАВИЛИ, ЧТОБЫ ЗАКРЫТЬ УДАЛЕНИЕ!
 
-  // 4. Функция перевода клиента на следующий этап воронки
-  const handleMoveClient = async (id, currentStatus) => {
-    let nextStatus = '';
-    
-    // Определяем следующий шаг по цепочке
-    if (currentStatus === 'Новая заявка') nextStatus = 'В работе';
-    if (currentStatus === 'В работе') nextStatus = 'Сайт сдан';
-    if (!nextStatus) return; // Если уже "Сайт сдан", двигать дальше некуда
+      // Отправляем новый статус
+      // на backend.
+      await updateLeadStatus(
+        id,
+        nextStatus
+      );
 
-    try {
-      const response = await fetch(`http://localhost:3000/api/clients/${id}`, {
-        method: 'PUT', // Метод обновления данных
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: nextStatus }),
-      });
-      
-      if (response.ok) {
-        const updatedData = await response.json();
-        // Если сервер прислал массив, сразу сохраняем его, иначе просто перечитываем базу
-        if (Array.isArray(updatedData)) {
-          setClients(updatedData);
-        } else {
-          fetchClients();
-        }
-      }
-    } catch (err) {
-      console.error('Ошибка при обновлении статуса:', err);
+
+      // Получаем актуальные данные.
+      await fetchLeads();
+
+
+    } catch (error) {
+
+      console.error(
+        'Ошибка изменения статуса:',
+        error
+      );
     }
-  };
-  
+  }
+
+
+  // ==================================================
+  // ОТОБРАЖЕНИЕ
+  // ==================================================
 
   return (
+
     <div className="crm-container">
+
       <header className="crm-header">
-        <h1>📊 Моя Fullstack CRM-система</h1>
+
+        <h1>
+          📊 Моя Fullstack CRM-система
+        </h1>
+
       </header>
 
-      {/* ФОРМА ДОБАВЛЕНИЯ КЛИЕНТА */}
-      <form onSubmit={handleAddClient} className="client-form">
-        <h3>➕ Добавить новую сделку</h3>
+
+      {/* ФОРМА НОВОГО ЛИДА */}
+
+      <form
+        onSubmit={handleAddLead}
+        className="client-form"
+      >
+
+        <h3>
+          ➕ Добавить новый лид
+        </h3>
+
+
         <div className="form-inputs">
-          <input 
-            type="text" 
-            placeholder="ФИО клиента или компания" 
-            value={name} 
-            onChange={(e) => setName(e.target.value)} 
+
+          <input
+            type="text"
+            placeholder="ФИО клиента или компания"
+            value={name}
+            onChange={(event) =>
+              setName(event.target.value)
+            }
           />
-          <input 
-            type="number" 
-            placeholder="Бюджет (₽)" 
-            value={budget} 
-            onChange={(e) => setBudget(e.target.value)} 
+
+
+          <input
+            type="number"
+            placeholder="Бюджет (₽)"
+            value={budget}
+            onChange={(event) =>
+              setBudget(event.target.value)
+            }
           />
-          <input 
-            type="text" 
-            placeholder="Номер телефона" 
-            value={phone} 
-            onChange={(e) => setPhone(e.target.value)} 
+
+
+          <input
+            type="text"
+            placeholder="Номер телефона"
+            value={phone}
+            onChange={(event) =>
+              setPhone(event.target.value)
+            }
           />
-          <button type="submit">Добавить</button>
+
+
+          <button type="submit">
+            Добавить
+          </button>
+
         </div>
+
       </form>
 
-      {/* КАНБАН-ДОСКА С КОЛОНКАМИ */}
+
+      {/* ==================================================
+          ВОРОНКА
+          ================================================== */}
+
       <div className="kanban-board">
-        
-        {/* КОЛОНКА 1: НОВЫЕ ЗАЯВКИ */}
-        <div className="kanban-column">
-          <div className="column-header new">Новая заявка ({clients.filter(c => c.status === 'Новая заявка').length})</div>
-          <div className="column-body">
-            {clients.filter(c => c.status === 'Новая заявка').map(client => (
-              <div key={client.id} className="client-card">
-                <button onClick={() => handleDeleteClient(client.id)} className="btn-delete">❌</button>
-                <h3>{client.name}</h3>
-                <p><strong>Бюджет:</strong> {client.budget.toLocaleString()} ₽</p>
-                <p><strong>Тел:</strong> {client.phone || '—'}</p>
-                <button onClick={() => handleMoveClient(client.id, client.status)} className="btn-move">В работу ➡️</button>
-              </div>
-            ))}
-          </div>
-        </div>
 
-        {/* КОЛОНКА 2: В РАБОТЕ */}
-        <div className="kanban-column">
-          <div className="column-header in-progress">В работе ({clients.filter(c => c.status === 'В работе').length})</div>
-          <div className="column-body">
-            {clients.filter(c => c.status === 'В работе').map(client => (
-              <div key={client.id} className="client-card">
-                <button onClick={() => handleDeleteClient(client.id)} className="btn-delete">❌</button>
-                <h3>{client.name}</h3>
-                <p><strong>Бюджет:</strong> {client.budget.toLocaleString()} ₽</p>
-                <p><strong>Тел:</strong> {client.phone || '—'}</p>
-                <button onClick={() => handleMoveClient(client.id, client.status)} className="btn-move font-done">Сдан 👑</button>
-              </div>
-            ))}
-          </div>
-        </div>
 
-        {/* КОЛОНКА 3: ГОТОВО */}
-        <div className="kanban-column">
-          <div className="column-header done">Сайт сдан ({clients.filter(c => c.status === 'Сайт сдан').length})</div>
-          <div className="column-body">
-            {clients.filter(c => c.status === 'Сайт сдан').map(client => (
-              <div key={client.id} className="client-card">
-                <button onClick={() => handleDeleteClient(client.id)} className="btn-delete">❌</button>
-                <h3>{client.name}</h3>
-                <p><strong>Бюджет:</strong> {client.budget.toLocaleString()} ₽</p>
-                <p><strong>Тел:</strong> {client.phone || '—'}</p>
-              </div>
-            ))}
-          </div>
-        </div>
+        {/* NEW */}
+
+        <KanbanColumn
+          title="🆕 Новые"
+          status="NEW"
+          leads={leads}
+          onMove={handleMoveLead}
+        />
+
+
+        {/* CONTACTED */}
+
+        <KanbanColumn
+          title="📞 Связались"
+          status="CONTACTED"
+          leads={leads}
+          onMove={handleMoveLead}
+        />
+
+
+        {/* DISCUSSION */}
+
+        <KanbanColumn
+          title="💬 Обсуждение"
+          status="DISCUSSION"
+          leads={leads}
+          onMove={handleMoveLead}
+        />
+
+
+        {/* OFFER */}
+
+        <KanbanColumn
+          title="📄 Предложение"
+          status="OFFER"
+          leads={leads}
+          onMove={handleMoveLead}
+        />
+
+
+        {/* WON */}
+
+        <KanbanColumn
+          title="💰 Сделка"
+          status="WON"
+          leads={leads}
+          onMove={handleMoveLead}
+        />
+
+
+        {/* LOST */}
+
+        <KanbanColumn
+          title="❌ Потеряно"
+          status="LOST"
+          leads={leads}
+          onMove={handleMoveLead}
+        />
 
       </div>
+
     </div>
   );
 }
+
+
+// ==================================================
+// КОЛОНКА KANBAN
+// ==================================================
+
+function KanbanColumn({
+  title,
+  status,
+  leads,
+  onMove,
+}) {
+
+  // Оставляем только лидов
+  // текущего статуса.
+  const columnLeads = leads.filter(
+    (lead) =>
+      lead.status === status
+  );
+
+
+  return (
+
+    <div className="kanban-column">
+
+      <div className="column-header">
+
+        {title}
+
+        {' '}
+
+        ({columnLeads.length})
+
+      </div>
+
+
+      <div className="column-body">
+
+        {columnLeads.map((lead) => (
+
+          <div
+            key={lead.id}
+            className="client-card"
+          >
+
+            <h3>
+              {lead.name}
+            </h3>
+
+
+            <p>
+              <strong>
+                Бюджет:
+              </strong>{' '}
+
+              {(lead.budget || 0)
+                .toLocaleString()}
+
+              {' '}₽
+            </p>
+
+
+            <p>
+              <strong>
+                Тел:
+              </strong>{' '}
+
+              {lead.phone || '—'}
+            </p>
+
+
+            <p>
+              <strong>
+                Предварительно:
+              </strong>{' '}
+
+              {lead.price_from || 0}
+              {' '}–{' '}
+              {lead.price_to || 0}
+              {' '}₽
+            </p>
+
+
+            {status !== 'WON' &&
+              status !== 'LOST' && (
+
+                <button
+                  onClick={() =>
+                    onMove(
+                      lead.id,
+                      lead.status
+                    )
+                  }
+                  className="btn-move"
+                >
+                  Следующий этап ➡️
+                </button>
+
+              )}
+
+          </div>
+
+        ))}
+
+      </div>
+
+    </div>
+  );
+}
+
 
 export default App;

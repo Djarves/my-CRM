@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-   "scripts": {
+  "scripts": {
     "start": "node --watch server.js",
     "dev": "npx concurrently \"node --watch server.js\" \"cd my-crm-frontend && npm run dev\""
   },
@@ -15,6 +15,7 @@
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "https-proxy-agent": "^9.1.0",
     "pg": "^8.23.0"
   },
   "devDependencies": {

@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Frontend Developer portfolio. Clean and responsive websites using HTML, CSS and JavaScript.">
+    <meta name="keywords" content="Frontend Developer, HTML, CSS, JavaScript, Portfolio">
+    <meta name="author" content="Andrey Simpelev">
+    <title>Заказать лендинг недорого | Сайт для малого бизнеса под ключ</title>
+    <meta name="description" content="Разработка сайтов для малого бизнеса и частных мастеров. У меня можно заказать сайт-визитку, продающий лендинг недорого или индивидуальный сайт-портфолио с интеграцией в CRM.">
+    <meta name="keywords" content="заказать сайт-визитку, сделать сайт для мастера, лендинг недорого, сайт для малого бизнеса, сайт-portfolio, разработка сайтов под ключ">
+    <link rel="icon" href="favicon.ico">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+    <!-- Header (Шапка сайта) -->
+    <header class="header">
+        <div class="container">
+            <div class="header__wrapper">
+                <div class="header__logo">
+                    <img src="icon.png" alt="Andrey Simpelev Logo" class="header__logo-image">
+                </div>
+
+                <nav class="header__nav">
+                    <a href="#about" class="header__link">Обо мне</a>
+                    <a href="#projects" class="header__link">Проекты</a>
+                    <a href="#skills" class="header__link">Навыки</a>
+                    <a href="#contact" class="header__link">Контакты</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+
+    <!-- Hero (Главный экран) -->
+
+    <section class="hero">
+    <div class="container">
+        <div class="hero__wrapper">
+
+            <!-- Левая часть (текст) -->
+            <div class="hero__content">
+
+                <h1 class="hero__title">
+                    Разработчик Веб Интерфейса
+                </h1>
+
+                <p class="hero__subtitle">
+                    Создаю адаптивные и современные веб-интерфейсы
+                </p>
+
+                <p class="hero__description">
+                    Работаю с HTML, CSS и JavaScript. 
+                    Пишу чистый, структурированный код по методологии BEM, 
+                    использую современные подходы и инструменты сборки.
+                </p>
+
+                <p class="hero__stack">
+                    HTML • CSS • JavaScript • Firebase • Parcel
+                </p>
+
+
+                <div class="hero__buttons">
+                    <a href="#projects" class="hero__button hero__button--primary">
+                        Смотреть проекты
+                    </a>
+
+                    <a href="#contact" class="hero__button hero__button--secondary">
+                        Связаться
+                    </a>
+                </div>
+
+            </div>
+
+            <!-- Правая часть (фото) -->
+            <div class="hero__image">
+                <img src="name.jpg" alt="Andrey Simpelev" class="hero__img">
+            </div>
+
+        </div>
+    </div>
+</section>
+
+
+    <!-- Projects (Проекты) -->
+    <section class="projects" id="projects">
+        <div class="container">
+            <h2 class="projects__title">
+                Проекты
+            </h2>
+
+            <div class="projects__grid">
+
+    <!-- AutoService -->
+    <div class="projects__card">
+        <img src="avto.png" alt="AutoService" class="projects__image">
+
+        <div class="projects__overlay">
+            <h3 class="projects__card-title">AutoService Landing</h3>
+            <p class="projects__card-text">
+                Адаптивный лендинг для автосервиса
+            </p>
+
+            <button class="projects__button" data-project="autoservice">
+                Подробнее
+            </button>
+        </div>
+    </div>
+
+
+    <!-- Метрика -->
+    <div class="projects__card">
+        <img src="metrik.png" alt="Metrika" class="projects__image">
+
+        <div class="projects__overlay">
+            <h3 class="projects__card-title">Real Estate Website</h3>
+            <p class="projects__card-text">
+                Верстка сайта недвижимости по макету
+            </p>
+
+            <button class="projects__button" data-project="metriks">
+                Подробнее
+            </button>
+        </div>
+    </div>
+
+
+    <!-- Брови -->
+    <div class="projects__card">
+        <img src="brovi.png" alt="Brow Studio" class="projects__image">
+
+        <div class="projects__overlay">
+            <h3 class="projects__card-title">Brow Studio</h3>
+            <p class="projects__card-text">
+                Сайт для студии бровей
+            </p>
+
+            <button class="projects__button" data-project="brows">
+                Подробнее
+            </button>
+        </div>
+    </div>
+
+
+    <!-- Movie App -->
+    <div class="projects__card">
+        <img src="movie.png" alt="Movie App" class="projects__image">
+
+        <div class="projects__overlay">
+            <h3 class="projects__card-title">Movie App</h3>
+            <p class="projects__card-text">
+                Приложение с использованием Firebase
+            </p>
+
+            <button class="projects__button" data-project="movie">
+                Подробнее
+            </button>
+        </div>
+    </div>
+
+
+    <!-- Todo -->
+    <div class="projects__card">
+        <img src="todo.png" alt="Todo App" class="projects__image">
+
+        <div class="projects__overlay">
+            <h3 class="projects__card-title">Todo App</h3>
+            <p class="projects__card-text">
+                Приложение для управления задачами
+            </p>
+
+            <button class="projects__button" data-project="todo">
+                Подробнее
+            </button>
+        </div>
+    </div>
+
+</div>
+
+            
+        </div>
+    </section>
+
+
+    <!-- Skills (Навыки) -->
+    <section class="skills" id="skills">
+        <div class="container">
+            <h2 class="skills__title">
+                Навыки
+            </h2>
+
+            <ul class="skills__list">
+                <li class="skills__item">HTML5</li>
+                <li class="skills__item">CSS3</li>
+                <li class="skills__item">Flexbox</li>
+                <li class="skills__item">JavaScript</li>
+                <li class="skills__item">Firebase</li>
+                <li class="skills__item">Parcel</li>
+                <li class="skills__item">Git / GitHub</li>
+            </ul>
+        </div>
+    </section>
+
+
+    <!-- Contact (Контакты) -->
+    <section class="contact" id="contact">
+        <div class="container">
+            <h2 class="contact__title">
+                Контакты
+            </h2>
+
+            <p class="contact__text">
+                Email: aneresimpelev@mail.ru
+            </p>
+
+            <a href="mailto:aneresimpelev@mail.ru" class="contact__button">
+                Отправить сообщение
+            </a>
+        </div>
+    </section>
+
+
+    <!-- Footer (Подвал) -->
+    <footer class="footer">
+        <div class="container">
+            <p class="footer__text">
+                © Андрей Симпелев. Все права защищены.
+            </p>
+        </div>
+    </footer>
+
+    <div class="modal" id="modal">
+
+    <div class="modal__content">
+
+        <span class="modal__close">&times;</span>
+
+        <h2 id="modal-title">Название проекта</h2>
+        <p id="modal-description">
+            Описание проекта
+        </p>
+
+    </div>
+
+</div>
+
+
+</body>
+</html>

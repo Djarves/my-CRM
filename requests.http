@@ -1,20 +1,31 @@
-### 1. Получить всех клиентов
-GET http://localhost:3000/api/clients
-
-###
-
-### 2. Добавить нового клиента (Агентство)
-POST http://localhost:3000/api/clients
+### Создать тестового лида
+POST http://localhost:3000/api/leads
 Content-Type: application/json
 
 {
-    "name": "ИП Петров",
-    "status": "В работе",
-    "budget": 75000,
-    "phone": "+79990001122"
+    "name": "Иван",
+    "phone": "+79990000000",
+    "email": "ivan@example.com",
+    "businessType": "Строительная компания",
+    "goal": "Получение заявок",
+    "description": "Нужен сайт для строительной компании с портфолио домов и формой заявки.",
+    "budget": 30000,
+    "options": {
+        "gallery": true,
+        "form": true,
+        "map": true,
+        "booking": false
+    },
+    "source": "test"
 }
 
-###
+### Получить все лиды
+GET http://localhost:3000/api/leads
 
-### 3. Удалить клиента по ID (удалим клиента с ID 1)
-DELETE http://localhost:3000/api/clients/1
+### Перевести лид в "Связались"
+PUT http://localhost:3000/api/leads/1/status
+Content-Type: application/json
+
+{
+    "status": "CONTACTED"
+}

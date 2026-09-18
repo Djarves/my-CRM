@@ -1,0 +1,398 @@
+/* ===== Сброс стандартных отступов ===== */
+* {
+    margin: 0;              /* убираем внешние отступы */
+    padding: 0;             /* убираем внутренние отступы */
+    box-sizing: border-box; /* чтобы padding не ломал ширину */
+}
+
+/* ===== Плавная прокрутка ===== */
+html {
+    scroll-behavior: smooth;
+}
+
+/* ===== Основной стиль страницы ===== */
+body {
+    font-family: Arial, sans-serif;   /* основной шрифт */
+    background-color: #0f172a;        /* тёмный фон */
+    color: #f1f5f9;                   /* светлый текст */
+    line-height: 1.6; 
+     overflow-x: hidden;                /* расстояние между строками */
+}
+
+/* ===== Контейнер ===== */
+.container {
+    max-width: 1200px;    /* максимальная ширина */
+    margin: 0 auto;       /* центрирование */
+    padding: 0 20px;      /* отступы по бокам */
+}
+
+/* ===== Заголовки ===== */
+h1, h2, h3 {
+    margin-bottom: 20px;
+}
+
+/* ===== Акцентный цвет ===== */
+:root {
+    --accent-color: #22c55e; /* переменная цвета */
+}
+
+
+/* ===== HERO ===== */
+
+.hero {
+    padding: 120px 0;
+
+    background: linear-gradient(
+        135deg,
+        #0f172a 0%,
+        #1e293b 50%,
+        #020617 100%
+    );
+}
+
+/* контейнер внутри hero */
+.hero__wrapper {
+    display: flex;              /* делаем 2 колонки */
+    align-items: center;        /* по вертикали ровно */
+    justify-content: space-between;
+    gap: 40px;
+}
+
+/* текст */
+.hero__content {
+    max-width: 600px;
+    animation: fadeUp 1s ease forwards;
+}
+
+/* заголовок */
+.hero__title {
+    font-size: 52px;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+/* подзаголовок */
+.hero__subtitle {
+    font-size: 20px;
+    color: #94a3b8;
+    margin-bottom: 20px;
+}
+
+/* описание */
+.hero__description {
+    margin-bottom: 20px;
+}
+
+/* стек */
+.hero__stack {
+    margin-bottom: 30px;
+    color: var(--accent-color);
+}
+
+/* кнопки */
+.hero__buttons {
+    display: flex;
+    gap: 15px;
+}
+
+/* кнопка */
+.hero__button {
+    padding: 12px 28px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+/* главная кнопка */
+.hero__button--primary {
+    background: var(--accent-color);
+    color: white;
+}
+
+/* вторичная */
+.hero__button--secondary {
+    border: 1px solid #334155;
+    color: #f1f5f9;
+}
+
+/* hover */
+.hero__button:hover {
+    transform: translateY(-4px);
+}
+
+/* glow эффект */
+.hero__button--primary:hover {
+    box-shadow: 0 10px 30px rgba(59,130,246,0.5);
+}
+
+/* ===== ФОТО ===== */
+
+.hero__image {
+    position: relative;
+    animation: fadeUp 1.2s ease forwards;
+}
+
+.hero__img {
+    width: 320px;
+    border-radius: 20px;
+    transition: 0.4s;
+}
+
+/* hover на фото */
+.hero__img:hover {
+    transform: scale(1.05);
+}
+
+/* glow за фото */
+.hero__image::before {
+    content: "";
+    position: absolute;
+    top: -20px;
+    left: -20px;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, rgba(59,130,246,0.3), transparent 70%);
+    z-index: -1;
+    filter: blur(40px);
+}
+
+@media (max-width: 768px) {
+
+    .hero__wrapper {
+        flex-direction: column; /* колонка */
+        text-align: center;
+    }
+
+    .hero__buttons {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .hero__img {
+        width: 220px;
+    }
+
+    .hero__title {
+        font-size: 36px;
+    }
+}
+
+
+/* ===== Header ===== */
+
+.header {
+    padding: 20px 0;
+    background-color: #0f172a;
+    border-bottom: 1px solid #1e293b;
+}
+
+.header__logo-image {
+    width: 40px;
+    height: 40px;
+}
+
+.header__wrapper {
+    display: flex;                 /* включаем flex */
+    justify-content: space-between; /* логотип слева, меню справа */
+    align-items: center;           /* выравнивание по вертикали */
+}
+
+.header__logo {
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.header__nav {
+    display: flex;   /* ссылки в линию */
+    gap: 30px;       /* расстояние между ссылками */
+}
+
+.header__link {
+    text-decoration: none;
+    color: #f1f5f9;
+    transition: 0.3s;
+}
+
+.header__link:hover {
+    color: var(--accent-color);
+}
+
+
+/* ===== PROJECTS ===== */
+
+.projects__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+}
+
+/* карточка */
+.projects__card {
+    position: relative;
+    overflow: hidden;
+    border-radius: 12px;
+    cursor: pointer;
+}
+
+/* картинка */
+.projects__image {
+    width: 100%;
+    display: block;
+    transition: 0.5s;
+}
+
+/* overlay */
+.projects__overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.8);
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    opacity: 0;
+    transition: 0.4s;
+    text-align: center;
+    padding: 20px;
+}
+
+/* текст */
+.projects__card-title {
+    margin-bottom: 10px;
+}
+
+.projects__card-text {
+    margin-bottom: 15px;
+    color: #94a3b8;
+}
+
+/* кнопка */
+.projects__button {
+    padding: 10px 20px;
+    background: var(--accent-color);
+    border: none;
+    border-radius: 6px;
+    color: white;
+    cursor: pointer;
+}
+
+/* ===== HOVER ЭФФЕКТ ===== */
+
+.projects__card:hover .projects__image {
+    transform: scale(1.1);
+}
+
+.projects__card:hover .projects__overlay {
+    opacity: 1;
+}
+
+
+/* ===== MODAL ===== */
+
+.modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    opacity: 0;
+    visibility: hidden;
+    transition: 0.3s;
+}
+
+/* активное состояние */
+.modal.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal__content {
+    background: #1e293b;
+    padding: 30px;
+    border-radius: 10px;
+    max-width: 400px;
+    width: 90%;
+}
+
+.modal__close {
+    cursor: pointer;
+    float: right;
+    font-size: 24px;
+}
+
+
+
+/* ===== Skills ===== */
+
+.skills {
+    padding: 80px 0;
+}
+
+.skills__list {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    list-style: none;
+}
+
+.skills__item {
+    background-color: #1e293b;
+    padding: 10px 20px;
+    border-radius: 6px;
+}
+
+section {
+    padding: 80px 0;
+}
+
+
+/* ===== Анимация появления ===== */
+
+@keyframes fadeUp {
+    from {
+        opacity: 0;              /* невидимый */
+        transform: translateY(30px); /* чуть ниже */
+    }
+    to {
+        opacity: 1;              /* видимый */
+        transform: translateY(0); /* нормальная позиция */
+    }
+}
+
+/* Применяем к hero */
+.hero__content {
+    animation: fadeUp 1s ease forwards;
+}
+
+
+.projects__card {
+    background-color: #1e293b;
+    padding: 30px;
+    border-radius: 10px;
+    flex: 1 1 300px;
+    transition: all 0.3s ease;
+}
+
+.projects__card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.4);
+}
+
+
+a {
+    transition: all 0.3s ease;
+}
+
+
+.about,
+.skills,
+.contact {
+    background-color: #111827;
+}
+
