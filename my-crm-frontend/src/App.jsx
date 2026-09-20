@@ -7,6 +7,7 @@ import {
   getLeads,
   createLead,
   updateLeadStatus,
+  deleteLead,
 } from './services/api';
 
 
@@ -16,11 +17,19 @@ function App() {
   // а leads из нашей новой системы.
   const [leads, setLeads] = useState([]);
 
+  // Храним лида, которого пользователь открыл.
+  // Если здесь null — ни один лид не выбран.
+  const [selectedLead, setSelectedLead] = useState(null);
+
+  // Показывает, открыта ли форма редактирования.
+  const [isEditing, setIsEditing] = useState(false);
+
 
   // Поля формы.
   const [name, setName] = useState('');
   const [budget, setBudget] = useState('');
   const [phone, setPhone] = useState('');
+  const [editName, setEditName] = useState('');
 
 
   // ==================================================
@@ -130,61 +139,140 @@ function App() {
   // ПЕРЕМЕЩЕНИЕ ПО ВОРОНКЕ
   // ==================================================
 
-  async function handleMoveLead(
-    id,
-    currentStatus
-  ) {
+// Перемещение лида по этапам воронки.
+async function handleMoveLead(
+  id,
+  currentStatus,
+  direction
+) {
+  // Все основные этапы нашей воронки.
+  const statuses = [
+    'NEW',
+    'CONTACTED',
+    'DISCUSSION',
+    'OFFER',
+    'WON',
+    'LOST'
+  ];
 
-    // Определяем следующий статус.
-    let nextStatus;
+  // Находим позицию текущего статуса.
+  const currentIndex =
+    statuses.indexOf(currentStatus);
 
+    // Если лид находится в LOST,
+// возвращаем его обратно в начало воронки.
+if (direction === 'restore') {
+  try {
+    await updateLeadStatus(
+      id,
+      'NEW'
+    );
 
-    if (currentStatus === 'NEW') {
-      nextStatus = 'CONTACTED';
-    }
-
-    if (currentStatus === 'CONTACTED') {
-      nextStatus = 'DISCUSSION';
-    }
-
-    if (currentStatus === 'DISCUSSION') {
-      nextStatus = 'OFFER';
-    }
-
-    if (currentStatus === 'OFFER') {
-      nextStatus = 'WON';
-    }
-
-
-    // Если следующего статуса нет,
-    // ничего не делаем.
-    if (!nextStatus) {
-      return;
-    }
-
-
-    try {
-
-      // Отправляем новый статус
-      // на backend.
-      await updateLeadStatus(
-        id,
-        nextStatus
-      );
-
-
-      // Получаем актуальные данные.
-      await fetchLeads();
-
-
-    } catch (error) {
-
-      console.error(
-        'Ошибка изменения статуса:',
-        error
-      );
-    }
+    await fetchLeads();
+  } catch (error) {
+    console.error(
+      'Ошибка восстановления лида:',
+      error
+    );
   }
+
+  return;
+}
+
+    // Если лид потерян —
+ // сразу переводим его в LOST.
+if (direction === 'lost') {
+  try {
+    await updateLeadStatus(
+      id,
+      'LOST'
+    );
+
+    await fetchLeads();
+  } catch (error) {
+    console.error(
+      'Ошибка изменения статуса:',
+      error
+    );
+  }
+
+  return;
+}
+
+  // Вычисляем новый индекс.
+  const newIndex =
+    direction === 'next'
+      ? currentIndex + 1
+      : currentIndex - 1;
+
+  // Если дальше или назад идти нельзя —
+  // ничего не делаем.
+  if (
+    newIndex < 0 ||
+    newIndex >= statuses.length
+  ) {
+    return;
+  }
+
+  // Получаем новый статус.
+  const nextStatus =
+    statuses[newIndex];
+
+  try {
+    // Отправляем новый статус на backend.
+    await updateLeadStatus(
+      id,
+      nextStatus
+    );
+
+    // После изменения снова загружаем лиды
+    // из базы данных.
+    await fetchLeads();
+  } catch (error) {
+    console.error(
+      'Ошибка изменения статуса:',
+      error
+    );
+  }
+}
+
+// ==================================================
+// УДАЛЕНИЕ ЛИДА
+// ==================================================
+
+async function handleDeleteLead(id) {
+
+  // Спрашиваем подтверждение перед удалением.
+  const confirmed = window.confirm(
+    'Удалить этого лида?'
+  );
+
+  // Если пользователь нажал "Отмена",
+  // прекращаем выполнение функции.
+  if (!confirmed) {
+    return;
+  }
+
+  try {
+
+    // Отправляем DELETE-запрос на backend.
+    await deleteLead(id);
+
+    // Получаем актуальные данные из БД.
+    await fetchLeads();
+
+  } catch (error) {
+
+    console.error(
+      'Ошибка удаления лида:',
+      error
+    );
+
+    alert(
+      'Не удалось удалить лида'
+    );
+  }
+}
 
 
   // ==================================================
@@ -271,6 +359,8 @@ function App() {
           status="NEW"
           leads={leads}
           onMove={handleMoveLead}
+          onDelete={handleDeleteLead}
+          onSelect={setSelectedLead}
         />
 
 
@@ -281,6 +371,8 @@ function App() {
           status="CONTACTED"
           leads={leads}
           onMove={handleMoveLead}
+          onDelete={handleDeleteLead}
+          onSelect={setSelectedLead}
         />
 
 
@@ -291,6 +383,8 @@ function App() {
           status="DISCUSSION"
           leads={leads}
           onMove={handleMoveLead}
+          onDelete={handleDeleteLead}
+          onSelect={setSelectedLead}
         />
 
 
@@ -301,6 +395,8 @@ function App() {
           status="OFFER"
           leads={leads}
           onMove={handleMoveLead}
+          onDelete={handleDeleteLead}
+          onSelect={setSelectedLead}
         />
 
 
@@ -311,6 +407,8 @@ function App() {
           status="WON"
           leads={leads}
           onMove={handleMoveLead}
+          onDelete={handleDeleteLead}
+          onSelect={setSelectedLead}
         />
 
 
@@ -321,9 +419,122 @@ function App() {
           status="LOST"
           leads={leads}
           onMove={handleMoveLead}
+          onDelete={handleDeleteLead}
+          onSelect={setSelectedLead}
         />
 
       </div>
+
+        {selectedLead && (
+          <div className="lead-modal"
+          onClick={() => setSelectedLead(null)}
+          >
+            <div className="lead-modal-content"
+            onClick={(event) => event.stopPropagation()}
+            >
+
+              <button
+                onClick={() => setSelectedLead(null)}
+                className="lead-modal-close"
+              >
+                ✕
+              </button>
+
+      <h2>
+        {selectedLead.name}
+      </h2>
+
+      <p>
+        <strong>Телефон:</strong>{' '}
+        {selectedLead.phone || '—'}
+      </p>
+
+      <p>
+        <strong>Email:</strong>{' '}
+        {selectedLead.email || '—'}
+      </p>
+
+      <p>
+        <strong>Бизнес:</strong>{' '}
+        {selectedLead.business_type || '—'}
+      </p>
+
+      <p>
+        <strong>Цель:</strong>{' '}
+        {selectedLead.goal || '—'}
+      </p>
+
+      <p>
+        <strong>Бюджет:</strong>{' '}
+        {(selectedLead.budget || 0).toLocaleString()} ₽
+      </p>
+
+      <p>
+        <strong>Предварительная цена:</strong>{' '}
+        {selectedLead.price_from || 0}
+        {' '}–{' '}
+        {selectedLead.price_to || 0} ₽
+      </p>
+
+      <p>
+        <strong>Дата создания:</strong>{' '}
+        {new Date(selectedLead.created_at).toLocaleString('ru-RU')}
+      </p>
+
+      <p>
+        <strong>Статус:</strong>{' '}
+        {selectedLead.status}
+      </p>
+
+        <button
+          className="btn-edit-lead"
+          onClick={() => {
+             // Берём имя выбранного лида и кладём его в поле редактирования.
+              setEditName(selectedLead.name || '');
+              setIsEditing(true);
+            console.log('✏️ Редактируем лид:', selectedLead);
+          }}
+        >
+          ✏️ Редактировать
+        </button>
+
+       {isEditing && (
+        <div className="edit-form">
+
+          <label>
+            Имя:
+
+            <input
+              type="text"
+              value={editName}
+              onChange={(event) => {
+                setEditName(event.target.value);
+             }}
+            />
+          </label>
+
+           </div>
+        )}
+
+      <p>
+        <strong>Описание:</strong>
+      </p>
+
+      <p>
+        {selectedLead.description || 'Нет описания'}
+      </p>
+
+      <p>
+        <strong>AI-бриф:</strong>
+      </p>
+
+      <p>
+        {selectedLead.ai_brief || 'AI-бриф пока отсутствует'}
+      </p>
+
+    </div>
+  </div>
+)}
 
     </div>
   );
@@ -339,6 +550,8 @@ function KanbanColumn({
   status,
   leads,
   onMove,
+  onDelete,
+  onSelect,
 }) {
 
   // Оставляем только лидов
@@ -371,7 +584,19 @@ function KanbanColumn({
           <div
             key={lead.id}
             className="client-card"
+            onClick={() => onSelect(lead)}
+            
           >
+
+          <button
+            onClick={(event) => {
+              event.stopPropagation();
+              onDelete(lead.id);
+              }}
+            className="btn-delete"
+          >
+            🗑️
+          </button>
 
             <h3>
               {lead.name}
@@ -410,23 +635,68 @@ function KanbanColumn({
               {' '}₽
             </p>
 
+      
+<div className="lead-actions">
 
-            {status !== 'WON' &&
-              status !== 'LOST' && (
+  {/* Если лид потерян — даём возможность вернуть его */}
+  {status === 'LOST' && (
+    <button
+      onClick={() =>
+        onMove(
+          lead.id,
+          lead.status,
+          'restore'
+        )
+      }
+      className="btn-move"
+    >
+      ↩️ Вернуть
+    </button>
+  )}
 
-                <button
-                  onClick={() =>
-                    onMove(
-                      lead.id,
-                      lead.status
-                    )
-                  }
-                  className="btn-move"
-                >
-                  Следующий этап ➡️
-                </button>
+  {/* Кнопка назад для обычных этапов */}
+  {status !== 'NEW' &&
+    status !== 'LOST' && (
+      <button
+        onClick={(event) => {
+          event.stopPropagation();
+          onMove(lead.id, lead.status, 'prev');
+            }}
+        className="btn-move"
+      >
+        ⬅️ Назад
+      </button>
+  )}
 
-              )}
+  {/* Кнопка вперёд */}
+  {status !== 'WON' &&
+    status !== 'LOST' && (
+      <button
+        onClick={(event) => {
+          event.stopPropagation();
+          onMove(lead.id, lead.status, 'next');
+            }}
+        className="btn-move"
+      >
+        Вперёд ➡️
+      </button>
+  )}
+
+  {/* Перевести в "Потеряно" */}
+  {status !== 'LOST' &&
+    status !== 'WON' && (
+      <button
+        onClick={(event) => {
+         event.stopPropagation();
+          onMove(lead.id, lead.status, 'lost');
+           }}
+        className="btn-lost"
+      >
+        ❌ Потеряно
+      </button>
+  )}
+
+</div>
 
           </div>
 

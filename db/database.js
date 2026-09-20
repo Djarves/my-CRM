@@ -2,35 +2,47 @@
 // Pool управляет подключениями к PostgreSQL.
 const { Pool } = require('pg');
 
-// Загружаем переменные из файла .env
+// Загружаем переменные из файла .env.
 require('dotenv').config();
 
+
 // Создаём пул подключения к PostgreSQL.
-// DATABASE_URL хранится в .env.
 const pool = new Pool({
+    // Берём строку подключения из .env.
     connectionString: process.env.DATABASE_URL,
+
+    // Максимум 10 одновременных подключений.
+    max: 10,
+
+    // Неиспользуемое соединение закрывается
+    // после 30 секунд простоя.
+    idleTimeoutMillis: 30000,
+
+    // Если новое соединение не устанавливается
+    // за 5 секунд — считаем попытку неудачной.
+    connectionTimeoutMillis: 5000,
+
+    // Разрешаем TCP keep-alive.
+    keepAlive: true,
+
+    // Начинаем keep-alive через 10 секунд.
+    keepAliveInitialDelayMillis: 10000,
 });
 
-// Если соединение с PostgreSQL оборвалось,
-// выводим ошибку, но не роняем сервер.
+
+// Если Pool обнаружил ошибку у соединения,
+// выводим её в терминал.
 pool.on('error', (err) => {
+
     console.error(
         '⚠️ Ошибка PostgreSQL:',
         err.message
     );
+
 });
 
-// Проверяем подключение к PostgreSQL при запуске сервера.
-pool.query('SELECT NOW()')
-    .then(() => {
-        console.log('✅ PostgreSQL подключён');
-    })
-    .catch((err) => {
-        console.error(
-            '❌ PostgreSQL НЕ подключён:',
-            err.message
-        );
-    });
-// Экспортируем pool,
-// чтобы другие файлы могли работать с базой.
+
+// Экспортируем Pool.
+// Его будут использовать контроллеры,
+// initDatabase() и другие части backend.
 module.exports = pool;

@@ -30,7 +30,7 @@ async function initDatabase() {
 
             description TEXT,
             ai_brief TEXT,
-
+            options JSONB,
             budget INT DEFAULT 0,
 
             price_from INT DEFAULT 0,

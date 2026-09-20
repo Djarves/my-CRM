@@ -94,3 +94,28 @@ export async function updateLeadStatus(
     // Возвращаем обновлённый лид.
     return data;
 }
+
+// Удаление лида.
+export async function deleteLead(id) {
+
+    // Отправляем DELETE-запрос на backend.
+    const response = await fetch(
+        `${API_URL}/api/leads/${id}`,
+        {
+            method: 'DELETE',
+        }
+    );
+
+    // Получаем ответ сервера.
+    const data = await response.json();
+
+    // Если сервер вернул ошибку.
+    if (!response.ok) {
+        throw new Error(
+            data.error || 'Ошибка удаления лида'
+        );
+    }
+
+    // Возвращаем результат.
+    return data;
+}

@@ -11,6 +11,7 @@ const {
     createLead,
     getLeads,
     updateLeadStatus,
+    deleteLead,
 } = require('../controllers/leads.controller');
 
 
@@ -28,6 +29,7 @@ router.get('/', getLeads);
 // Изменение этапа воронки.
 router.put('/:id/status', updateLeadStatus);
 
+router.delete('/:id', deleteLead);
 
 // Экспортируем router.
 module.exports = router;

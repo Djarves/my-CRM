@@ -63,13 +63,17 @@
 
 
                 <div class="hero__buttons">
-                    <a href="#projects" class="hero__button hero__button--primary">
-                        Смотреть проекты
+
+                    <!-- Кнопка перехода к проектам -->
+                 <a href="#projects" class="hero__button hero__button--secondary">
+                    Смотреть проекты
+                 </a>
+
+                 <!-- Главная кнопка нашего конфигуратора -->
+                    <a href="#configurator" class="hero__button hero__button--primary">
+                    🚀 Рассчитать стоимость сайта
                     </a>
 
-                    <a href="#contact" class="hero__button hero__button--secondary">
-                        Связаться
-                    </a>
                 </div>
 
             </div>
@@ -81,6 +85,68 @@
 
         </div>
     </div>
+</section>
+
+<!-- Конфигуратор -->
+<section class="configurator" id="configurator">
+
+    <div class="container">
+
+        <div class="configurator__header">
+
+            <span class="configurator__label">
+                КОНФИГУРАТОР
+            </span>
+
+            <h2 class="configurator__title">
+                Рассчитайте стоимость сайта
+            </h2>
+
+            <p class="configurator__description">
+                Ответьте на несколько простых вопросов —
+                мы сформируем предварительную стоимость проекта.
+            </p>
+
+        </div>
+
+        <div class="configurator__step">
+
+            <span class="configurator__step-number">
+                Шаг 1 из 5
+            </span>
+
+            <h3 class="configurator__question">
+                Какой у вас бизнес?
+            </h3>
+
+            <div class="configurator__options">
+
+                <button class="configurator__option" type="button">
+                    Автосервис
+                </button>
+
+                <button class="configurator__option" type="button">
+                    Строительство / ремонт
+                </button>
+
+                <button class="configurator__option" type="button">
+                    Бьюти / салон
+                </button>
+
+                <button class="configurator__option" type="button">
+                    Услуги специалиста
+                </button>
+
+                <button class="configurator__option" type="button">
+                    Другое
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
 </section>
 
 
@@ -245,7 +311,7 @@
     </div>
 
 </div>
-
-
+<script src="main.js"></script>
+<script src="js/configurator.js"></script>
 </body>
 </html>

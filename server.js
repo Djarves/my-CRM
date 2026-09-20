@@ -206,15 +206,40 @@ app.put('/api/clients/:id', async (req, res) => {
 // затем запускаем сервер.
 async function startServer() {
 
-    await initDatabase();
+    try {
 
-    app.listen(PORT, () => {
+        // Проверяем, что PostgreSQL отвечает.
+        await pool.query('SELECT NOW()');
 
-        console.log(
-            `🚀 Backend запущен: http://localhost:${PORT}`
+        console.log('✅ PostgreSQL подключён');
+
+
+        // После успешной проверки базы
+        // создаём необходимые таблицы.
+        await initDatabase();
+
+
+        // Только после успешной работы с базой
+        // запускаем HTTP-сервер.
+        app.listen(PORT, () => {
+
+            console.log(
+                `🚀 Backend запущен: http://localhost:${PORT}`
+            );
+
+        });
+
+    } catch (error) {
+
+        // Если PostgreSQL недоступен,
+        // сервер не запускаем.
+        console.error(
+            '❌ Не удалось запустить backend:',
+            error.message
         );
 
-    });
+        process.exit(1);
+    }
 }
 
 

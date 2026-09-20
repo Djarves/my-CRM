@@ -1,5 +1,5 @@
 // Подключаем базу данных.
-const pool = require('../db/database');
+const dbQuery = require('../db/query');
 
 // Подключаем калькулятор.
 const {
@@ -43,7 +43,7 @@ async function createLead(req, res) {
         const price = calculatePrice(options);
 
         // SQL-запрос для создания лида.
-        const query = `
+        const queryText = `
             INSERT INTO leads (
                 name,
                 phone,
@@ -51,6 +51,7 @@ async function createLead(req, res) {
                 business_type,
                 goal,
                 description,
+                options,
                 budget,
                 price_from,
                 price_to,
@@ -66,7 +67,8 @@ async function createLead(req, res) {
                 $7,
                 $8,
                 $9,
-                $10
+                $10,
+                $11
             )
             RETURNING *;
         `;
@@ -80,6 +82,7 @@ async function createLead(req, res) {
             businessType || null,
             goal || null,
             description || null,
+            options || {},
             budget || 0,
             price.priceFrom,
             price.priceTo,
@@ -87,24 +90,14 @@ async function createLead(req, res) {
         ];
 
         // Отправляем запрос в PostgreSQL.
-        const result = await pool.query(
-            query,
+        const result = await dbQuery(
+            queryText,
             values
-        );
+            );
 
         // Получаем созданного лида.
         const lead = result.rows[0];
 
-        // Отправляем уведомление.
-        await sendTelegramMessage(
-            `🔥 <b>Новый лид!</b>
-
-👤 Имя: ${lead.name}
-📱 Телефон: ${lead.phone || '—'}
-🏢 Бизнес: ${lead.business_type || '—'}
-💰 Бюджет: ${lead.budget || '—'} ₽
-💵 Предварительно: ${lead.price_from}–${lead.price_to} ₽`
-        );
 
         // Отправляем результат клиенту.
         return res.status(201).json({
@@ -132,7 +125,7 @@ async function getLeads(req, res) {
 
     try {
 
-        const result = await pool.query(`
+        const result = await dbQuery(`
             SELECT *
             FROM leads
             ORDER BY id DESC
@@ -191,7 +184,7 @@ async function updateLeadStatus(req, res) {
             });
 
         // Обновляем статус.
-        const result = await pool.query(
+        const result = await dbQuery(
             `
             UPDATE leads
             SET
@@ -234,10 +227,57 @@ async function updateLeadStatus(req, res) {
     }
 }
 
+// Удаление лида.
+async function deleteLead(req, res) {
+
+    try {
+
+        // Получаем ID лида из URL.
+        const id = Number(req.params.id);
+
+        // Удаляем лид из базы данных.
+        const result = await dbQuery(
+            `
+            DELETE FROM leads
+            WHERE id = $1
+            RETURNING *;
+            `,
+            [id]
+        );
+
+        // Если такого лида нет.
+        if (result.rowCount === 0) {
+
+            return res.status(404).json({
+                success: false,
+                error: 'Лид не найден',
+            });
+        }
+
+        // Возвращаем удалённого лида.
+        return res.json({
+            success: true,
+            lead: result.rows[0],
+        });
+
+    } catch (error) {
+
+        console.error(
+            '❌ Ошибка удаления лида:',
+            error
+        );
+
+        return res.status(500).json({
+            success: false,
+            error: 'Ошибка сервера',
+        });
+    }
+}
 
 // Экспортируем контроллеры.
 module.exports = {
     createLead,
     getLeads,
     updateLeadStatus,
+    deleteLead,
 };
