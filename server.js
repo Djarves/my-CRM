@@ -8,6 +8,22 @@ const cors = require('cors');
 // Загружаем переменные из .env.
 require('dotenv').config();
 
+// Показываем путь к сертификату.
+console.log(
+    'NODE_EXTRA_CA_CERTS:',
+    process.env.NODE_EXTRA_CA_CERTS
+);
+
+// Показываем, существует ли файл сертификата.
+const fs = require('fs');
+
+console.log(
+    'Сертификат существует:',
+    fs.existsSync(
+        process.env.NODE_EXTRA_CA_CERTS
+    )
+);
+
 // Подключаем базу данных.
 const pool = require('./db/database');
 
@@ -16,6 +32,9 @@ const initDatabase = require('./db/init');
 
 // Подключаем маршруты лидов.
 const leadsRoutes = require('./routes/leads.routes');
+
+// Подключаем маршруты Push-уведомлений.
+const pushRoutes = require('./routes/push.routes');
 
 
 // Создаём Express-приложение.
@@ -46,6 +65,9 @@ app.use(express.static('public'));
 //
 // будут передаваться в leadsRoutes.
 app.use('/api/leads', leadsRoutes);
+
+// Все Push-запросы идут в pushRoutes.
+app.use('/api/push', pushRoutes);
 
 
 // ==================================================
@@ -200,7 +222,14 @@ app.put('/api/clients/:id', async (req, res) => {
 // ==================================================
 // СТАРТ СЕРВЕРА
 // ==================================================
-
+// Проверяем, загрузился ли ключ GigaChat из .env.
+// Сам ключ не выводим в консоль ради безопасности.
+console.log(
+    '🤖 GigaChat ключ:',
+    process.env.GIGACHAT_AUTH_KEY
+        ? 'загружен ✅'
+        : 'НЕ НАЙДЕН ❌'
+);
 
 // Сначала проверяем базу,
 // затем запускаем сервер.

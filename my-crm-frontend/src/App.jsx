@@ -17,6 +17,18 @@ function App() {
   // а leads из нашей новой системы.
   const [leads, setLeads] = useState([]);
 
+    // Храним состояние разрешения на уведомления.
+  // Возможные значения:
+  // 'default' — пользователь ещё ничего не выбрал.
+  // 'granted' — уведомления разрешены.
+  // 'denied' — уведомления запрещены.
+  const [notificationPermission, setNotificationPermission] =
+    useState(
+      'Notification' in window
+        ? Notification.permission
+        : 'unsupported'
+    );
+
   // Храним лида, которого пользователь открыл.
   // Если здесь null — ни один лид не выбран.
   const [selectedLead, setSelectedLead] = useState(null);
@@ -64,7 +76,119 @@ function App() {
 
   }, []);
 
+  // ==================================================
+  // УВЕДОМЛЕНИЯ
+  // ==================================================
 
+ async function handleEnableNotifications() {
+
+  console.log('🔔 Нажата кнопка уведомлений');
+
+  // Проверяем, поддерживает ли браузер уведомления.
+  if (!('Notification' in window)) {
+    alert('Этот браузер не поддерживает уведомления.');
+    return;
+  }
+
+  // Проверяем поддержку настоящих Push-уведомлений.
+  if (!('PushManager' in window)) {
+    alert('Этот браузер не поддерживает Push-уведомления.');
+    return;
+  }
+
+  // Запрашиваем разрешение пользователя.
+  const permission =
+    await Notification.requestPermission();
+
+  // Сохраняем результат.
+  setNotificationPermission(permission);
+
+  // Если разрешение не получено — прекращаем работу.
+  if (permission !== 'granted') {
+    return;
+  }
+
+  // Ждём готовности Service Worker.
+  const registration =
+    await navigator.serviceWorker.ready;
+    
+    console.log('✅ Service Worker готов:', registration);
+
+  // Получаем публичный VAPID-ключ.
+  const vapidPublicKey =
+    import.meta.env.VITE_VAPID_PUBLIC_KEY;
+
+    console.log(
+    '🔑 VAPID public key:',
+    vapidPublicKey
+);
+
+  // Создаём настоящую Push-подписку.
+  const subscription =
+    await registration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: vapidPublicKey,
+    });
+
+  // Пока просто смотрим подписку в Console.
+  console.log(
+    '🔔 Push-подписка создана:',
+    subscription
+  );
+
+// Отправляем Push-подписку на backend.
+console.log(
+  '📡 Отправляем Push-подписку на backend...'
+);
+
+try {
+
+  const response =
+    await fetch(
+      'http://localhost:3000/api/push/subscribe',
+      {
+        method: 'POST',
+
+        headers: {
+          'Content-Type':
+            'application/json',
+        },
+
+        body:
+          JSON.stringify(subscription),
+      }
+    );
+
+  console.log(
+    '📡 Ответ backend:',
+    response.status
+  );
+
+  const data =
+    await response.json();
+
+  console.log(
+    '📡 Данные от backend:',
+    data
+  );
+
+} catch (error) {
+
+  console.error(
+    '❌ Ошибка отправки подписки:',
+    error
+  );
+}
+
+  // Тестовое локальное уведомление оставляем.
+  registration.showNotification(
+    'My CRM',
+    {
+      body: 'Push-подписка создана! 🔔',
+      icon: '/icons/icon-192.png',
+    }
+  );
+}
   // ==================================================
   // СОЗДАНИЕ ЛИДА
   // ==================================================
@@ -285,11 +409,19 @@ async function handleDeleteLead(id) {
 
       <header className="crm-header">
 
-        <h1>
-          📊 Моя Fullstack CRM-система
-        </h1>
+  <h1>
+    📊 Моя Fullstack CRM-система
+  </h1>
 
-      </header>
+  <button
+    onClick={handleEnableNotifications}
+  >
+    {notificationPermission === 'granted'
+      ? '🔔 Уведомления включены'
+      : '🔔 Включить уведомления'}
+  </button>
+
+</header>
 
 
       {/* ФОРМА НОВОГО ЛИДА */}

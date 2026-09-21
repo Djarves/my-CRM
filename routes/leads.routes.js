@@ -6,6 +6,7 @@ const express = require('express');
 // из главного server.js.
 const router = express.Router();
 
+
 // Получаем функции контроллера.
 const {
     createLead,
@@ -29,7 +30,10 @@ router.get('/', getLeads);
 // Изменение этапа воронки.
 router.put('/:id/status', updateLeadStatus);
 
+
+// Удаление лида.
 router.delete('/:id', deleteLead);
+
 
 // Экспортируем router.
 module.exports = router;

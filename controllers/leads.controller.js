@@ -6,10 +6,14 @@ const {
     calculatePrice,
 } = require('../services/calculator.service');
 
-// Подключаем Telegram.
+// Сервис для генерации AI-брифа.
 const {
-    sendTelegramMessage,
-} = require('../services/telegram.service');
+    generateAiBrief,
+} = require('../services/ai.service');
+
+const {
+    sendPushNotification,
+} = require('../services/push.service');
 
 
 // Создание нового лида.
@@ -98,6 +102,110 @@ async function createLead(req, res) {
         // Получаем созданного лида.
         const lead = result.rows[0];
 
+        // Отправляем Push-уведомление о новой заявке.
+try {
+
+    // Получаем все Push-подписки из базы.
+    const subscriptionsResult = await dbQuery(
+        `
+            SELECT subscription
+            FROM push_subscriptions;
+        `
+    );
+
+    // Отправляем уведомление каждой подписке.
+    for (const row of subscriptionsResult.rows) {
+
+        try {
+
+            await sendPushNotification(
+                row.subscription,
+                {
+                    title: 'Новая заявка 🔔',
+                    body: `Новая заявка от ${lead.name}`,
+                    icon: '/icons/icon-192.png',
+                }
+            );
+
+       } catch (pushError) {
+
+    // Ошибка Push не должна ломать создание заявки.
+    console.error(
+        '❌ Не удалось отправить Push:',
+        pushError.message
+    );
+
+    // Если подписка больше не существует,
+    // удаляем её из PostgreSQL.
+    if (
+        pushError.statusCode === 404 ||
+        pushError.statusCode === 410
+    ) {
+
+        await dbQuery(
+            `
+                DELETE FROM push_subscriptions
+                WHERE endpoint = $1;
+            `,
+            [
+                row.subscription.endpoint,
+            ]
+        );
+
+        console.log(
+            '🗑️ Недействительная Push-подписка удалена из базы'
+        );
+    }
+}
+    }
+
+} catch (pushError) {
+
+    // Даже если проблема с получением подписок,
+    // заявка уже создана и должна остаться сохранённой.
+    console.error(
+        '❌ Ошибка Push-уведомления:',
+        pushError.message
+    );
+}
+
+        // Передаём созданного лида в GigaChat.
+generateAiBrief(lead)
+   .then(async (aiBrief) => {
+
+    // Обновляем созданного лида
+    // и записываем AI-бриф в базу данных.
+    await dbQuery(
+        `
+            UPDATE leads
+            SET ai_brief = $1
+            WHERE id = $2;
+        `,
+        [
+            aiBrief,
+            lead.id,
+        ]
+    );
+
+    // Показываем сообщение,
+    // чтобы убедиться, что запись прошла.
+    console.log(
+        '🤖 AI-бриф сохранён в базе для лида:',
+        lead.id
+    );
+
+})
+    .catch((error) => {
+
+        // Если GigaChat не сработал,
+        // заявка всё равно остаётся сохранённой.
+        console.error(
+            '❌ Ошибка генерации AI-брифа:',
+            error.message
+        );
+
+    });
+
 
         // Отправляем результат клиенту.
         return res.status(201).json({
@@ -178,11 +286,7 @@ async function updateLeadStatus(req, res) {
             });
         }
 
-        console.log('🔄 Обновляем лид:', {
-            id,
-            status,
-            });
-
+       
         // Обновляем статус.
         const result = await dbQuery(
             `
@@ -196,7 +300,6 @@ async function updateLeadStatus(req, res) {
             [status, id]
         );
 
-        console.log('✅ UPDATE выполнен:', result.rows[0]);
 
         // Если лид не найден.
         if (result.rowCount === 0) {

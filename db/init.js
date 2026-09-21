@@ -5,7 +5,7 @@ const pool = require('./database');
 async function initDatabase() {
 
     // Таблица клиентов.
-    // Оставляем её, потому что твой старый CRM уже её использует.
+    // Оставляем её, потому что старый CRM её использует.
     const createClientsTable = `
         CREATE TABLE IF NOT EXISTS clients (
             id SERIAL PRIMARY KEY,
@@ -45,6 +45,21 @@ async function initDatabase() {
         );
     `;
 
+    // Таблица Push-подписок.
+    const createPushSubscriptionsTable = `
+        CREATE TABLE IF NOT EXISTS push_subscriptions (
+            id SERIAL PRIMARY KEY,
+
+            endpoint TEXT NOT NULL UNIQUE,
+
+            subscription JSONB NOT NULL,
+
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+    `;
+
     try {
 
         // Создаём старую таблицу клиентов,
@@ -54,9 +69,26 @@ async function initDatabase() {
         // Создаём таблицу лидов.
         await pool.query(createLeadsTable);
 
-        console.log('✅ База данных проверена');
-        console.log('✅ Таблица clients готова');
-        console.log('✅ Таблица leads готова');
+        // Создаём таблицу Push-подписок.
+        await pool.query(
+            createPushSubscriptionsTable
+        );
+
+        console.log(
+            '✅ База данных проверена'
+        );
+
+        console.log(
+            '✅ Таблица clients готова'
+        );
+
+        console.log(
+            '✅ Таблица leads готова'
+        );
+
+        console.log(
+            '✅ Таблица push_subscriptions готова'
+        );
 
     } catch (error) {
 

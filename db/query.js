@@ -17,10 +17,13 @@ async function query(text, params) {
 
         // Проверяем, похожа ли ошибка
         // на внезапное закрытие соединения.
-        const isConnectionError =
-            error.message ===
-            'Connection terminated unexpectedly';
-
+     // Проверяем, является ли ошибка проблемой соединения.
+const isConnectionError =
+    error.message ===
+        'Connection terminated unexpectedly' ||
+    error.message ===
+        'read ECONNRESET' ||
+    error.code === 'ECONNRESET';
 
         // Если это не ошибка соединения,
         // сразу передаём ошибку дальше.
