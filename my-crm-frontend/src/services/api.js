@@ -1,6 +1,7 @@
-// Адрес нашего backend.
-// Все запросы CRM будут идти сюда.
-const API_URL = 'http://localhost:3000';
+// Адрес backend берём из переменной окружения Vite.
+// Локально и на Render можно использовать разные адреса.
+const API_URL =
+    import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 
 // Получаем все лиды.

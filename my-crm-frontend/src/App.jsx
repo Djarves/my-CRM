@@ -145,7 +145,7 @@ try {
 
   const response =
     await fetch(
-      'http://localhost:3000/api/push/subscribe',
+      `${import.meta.env.VITE_API_URL}/api/push/subscribe`,
       {
         method: 'POST',
 

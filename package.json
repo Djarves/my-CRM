@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node --watch server.js",
+    "start": "node server.js",
     "dev": "npx concurrently \"node --watch server.js\" \"cd my-crm-frontend && npm run dev\""
   },
   "keywords": [],
