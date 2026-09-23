@@ -820,7 +820,7 @@ async function sendLead() {
 
         // Отправляем данные конфигуратора на сервер
         const response = await fetch(
-            'http://localhost:3000/api/leads',
+            '/api/leads',
             {
                 method: 'POST',
 
