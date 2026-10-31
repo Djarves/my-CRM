@@ -1,5 +1,6 @@
 // Подключаем Express.
 const express = require('express');
+const axios = require('axios');
 
 // Подключаем CORS,
 // чтобы frontend мог обращаться к backend.
@@ -94,6 +95,10 @@ app.get('/api/clients', async (req, res) => {
             error: err.message,
         });
     }
+});
+
+app.get('/api/ping', (req, res) => {
+    res.status(200).send('pong');
 });
 
 
@@ -264,6 +269,18 @@ async function startServer() {
         process.exit(1);
     }
 }
+
+const SERVER_URL = 'https://my-crm-dashboard.onrender.com';
+
+// Запускаем бесконечный цикл пинга каждые 10 минут (600 000 мс)
+setInterval(async () => {
+    try {
+        const response = await axios.get(SERVER_URL);
+        console.log(`[Пингер]: Сервер активен. Ответ базы/сервера: ${response.data}`);
+    } catch (error) {
+        console.error('[Пингер]: Ошибка удержания активности сервера:', error.message);
+    }
+}, 600000);
 
 
 // Запускаем приложение.
