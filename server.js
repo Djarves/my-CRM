@@ -2,6 +2,9 @@
 const express = require('express');
 const axios = require('axios');
 
+// Подключаем библиотеку для чтения cookie.
+const cookieParser = require('cookie-parser');
+
 // Подключаем CORS,
 // чтобы frontend мог обращаться к backend.
 const cors = require('cors');
@@ -37,6 +40,9 @@ const leadsRoutes = require('./routes/leads.routes');
 // Подключаем маршруты Push-уведомлений.
 const pushRoutes = require('./routes/push.routes');
 
+// Подключаем маршруты авторизации.
+const authRoutes = require('./routes/auth.routes');
+
 
 // Создаём Express-приложение.
 const app = express();
@@ -46,15 +52,45 @@ const app = express();
 // Если мы запускаем проект локально, используем 3000.
 const PORT = process.env.PORT || 3000;
 
+// Список адресов, которым разрешено обращаться к backend.
+const allowedOrigins = [
+    'https://my-crm-dashboard.onrender.com',
+    'http://localhost:5173'
+];
 
-// Разрешаем запросы с frontend.
-app.use(cors());
+// Настраиваем CORS.
+app.use(cors({
+    // Проверяем адрес frontend.
+    origin: (origin, callback) => {
+
+        // Разрешаем запросы с указанных адресов.
+        if (!origin || allowedOrigins.includes(origin)) {
+            return callback(null, true);
+        }
+
+        // Не разрешаем запросы с других адресов.
+        return callback(null, false);
+    },
+
+    // Разрешаем передачу cookie.
+    credentials: true
+}));
 
 // Позволяем Express читать JSON.
 app.use(express.json());
+// Позволяем Express читать cookie из запросов.
+app.use(cookieParser());
 
 // Разрешаем отдавать файлы из public.
 app.use(express.static('public'));
+
+// Подключаем API авторизации.
+app.use('/api/auth', authRoutes);
+
+// Подключаем маршруты API.
+app.use('/api/leads', leadsRoutes);
+app.use('/api/push', pushRoutes);
+
 
 
 // ==================================================
@@ -65,12 +101,7 @@ app.use(express.static('public'));
 // /api/leads
 // /api/leads/1/status
 // и т.д.
-//
-// будут передаваться в leadsRoutes.
-app.use('/api/leads', leadsRoutes);
 
-// Все Push-запросы идут в pushRoutes.
-app.use('/api/push', pushRoutes);
 
 
 // ==================================================

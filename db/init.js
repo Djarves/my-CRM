@@ -92,13 +92,15 @@ async function initDatabase() {
 
     } catch (error) {
 
-        // Если произошла ошибка,
-        // показываем её в терминале.
-        console.error(
-            '❌ Ошибка создания таблиц:',
-            error.message
-        );
-    }
+    // Показываем ошибку создания таблиц.
+    console.error(
+        '❌ Ошибка создания таблиц:',
+        error.message
+    );
+
+    // Передаём ошибку функции startServer().
+    throw error;
+}
 }
 
 // Экспортируем функцию.

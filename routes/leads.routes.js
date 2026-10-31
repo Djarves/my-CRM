@@ -1,39 +1,23 @@
-// Подключаем Express.
 const express = require('express');
-
-// Создаём router.
-// Router позволяет вынести API
-// из главного server.js.
 const router = express.Router();
 
-
-// Получаем функции контроллера.
+// Подключаем контроллеры заявок.
 const {
     createLead,
     getLeads,
     updateLeadStatus,
-    deleteLead,
+    deleteLead
 } = require('../controllers/leads.controller');
 
+// Подключаем проверку авторизации.
+const authenticateToken = require('../middleware/auth');
 
-// POST /api/leads
-// Создание нового лида.
+// Получение заявок — только для авторизованных пользователей.
+router.get('/', authenticateToken, getLeads);
+
+// Остальные маршруты пока не меняем.
 router.post('/', createLead);
-
-
-// GET /api/leads
-// Получение всех лидов.
-router.get('/', getLeads);
-
-
-// PUT /api/leads/:id/status
-// Изменение этапа воронки.
 router.put('/:id/status', updateLeadStatus);
-
-
-// Удаление лида.
 router.delete('/:id', deleteLead);
 
-
-// Экспортируем router.
 module.exports = router;

@@ -229,33 +229,43 @@ generateAiBrief(lead)
 }
 
 
-// Получение всех лидов.
+// Получаем заявки только текущей организации.
 async function getLeads(req, res) {
 
     try {
 
-        const result = await dbQuery(`
-            SELECT *
-            FROM leads
-            ORDER BY id DESC
-        `);
+        // Берём ID организации из проверенного middleware.
+        const organizationId = req.user.organizationId;
 
+        // Получаем только заявки этой организации.
+        const result = await dbQuery(
+            `
+                SELECT *
+                FROM leads
+                WHERE organization_id = $1
+                ORDER BY id DESC
+            `,
+            [organizationId]
+        );
+
+        // Отправляем найденные заявки клиенту.
         return res.json(result.rows);
 
     } catch (error) {
 
+        // Записываем ошибку в серверный терминал.
         console.error(
             '❌ Ошибка получения лидов:',
             error
         );
 
+        // Отправляем ответ об ошибке.
         return res.status(500).json({
             success: false,
             error: 'Ошибка сервера',
         });
     }
 }
-
 
 // Изменение статуса лида.
 async function updateLeadStatus(req, res) {
