@@ -47,14 +47,15 @@ async function register(req, res) {
             message: 'Пароль должен содержать минимум 8 символов',
         });
     }
-
-    // Получаем соединение с PostgreSQL.
-   const client = await pool.connect();
+// Пока соединение с базой не получено.
+let client;
 
 // Отслеживаем, началась ли транзакция.
 let transactionStarted = false;
 
 try {
+    // Получаем соединение с PostgreSQL.
+    client = await pool.connect();
 
         // Проверяем, существует ли пользователь.
         const existingUser = await client.query(
@@ -202,8 +203,9 @@ res.cookie('token', token, {
 
     } finally {
 
-        // Возвращаем соединение в пул.
-        client.release();
+       if (client) {
+    client.release();
+}
     }
 }
 

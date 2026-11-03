@@ -8,14 +8,34 @@ import {
   createLead,
   updateLeadStatus,
   deleteLead,
+  getMe,
+  login,
 } from './services/api';
-
 
 function App() {
 
   // Здесь теперь хранятся НЕ clients,
   // а leads из нашей новой системы.
   const [leads, setLeads] = useState([]);
+
+  // Данные текущего пользователя.
+const [user, setUser] = useState(null);
+
+// Данные организации пользователя.
+const [organization, setOrganization] = useState(null);
+
+// Пока true — проверяем авторизацию.
+const [authLoading, setAuthLoading] = useState(true);
+
+// Сообщение об ошибке авторизации.
+const [authError, setAuthError] = useState('');
+
+// Значения полей формы входа.
+const [email, setEmail] = useState('');
+const [password, setPassword] = useState('');
+
+// Показывает, выполняется ли вход.
+const [loginLoading, setLoginLoading] = useState(false);
 
     // Храним состояние разрешения на уведомления.
   // Возможные значения:
@@ -68,13 +88,92 @@ function App() {
   }
 
 
-  // Загружаем лидов,
-  // когда CRM впервые открывается.
-  useEffect(() => {
+// Проверяем авторизацию при открытии CRM.
+useEffect(() => {
 
-    fetchLeads();
+  // Нужен, чтобы не обновлять состояние
+  // после размонтирования компонента.
+  let isMounted = true;
 
-  }, []);
+  async function checkAuth() {
+    try {
+      // Запрашиваем данные текущего пользователя.
+      const data = await getMe();
+
+      if (!isMounted) return;
+
+      // Сохраняем пользователя.
+      setUser(data.user);
+
+      // Загружаем лидов только после проверки.
+      await fetchLeads();
+
+    } catch (error) {
+
+      if (!isMounted) return;
+
+      // 401 означает, что пользователь не вошёл.
+      if (error.status === 401) {
+        setUser(null);
+      } else {
+        // Например, backend временно недоступен.
+        setAuthError(error.message);
+      }
+
+    } finally {
+
+      // Проверка авторизации завершена.
+      if (isMounted) {
+        setAuthLoading(false);
+      }
+    }
+  }
+
+  checkAuth();
+
+  // Очистка при размонтировании.
+  return () => {
+    isMounted = false;
+  };
+
+}, []);
+
+// Вход пользователя в CRM.
+async function handleLogin(event) {
+
+  // Не даём форме перезагрузить страницу.
+  event.preventDefault();
+
+  // Сбрасываем предыдущую ошибку.
+  setAuthError('');
+
+  try {
+    // Показываем, что вход выполняется.
+    setLoginLoading(true);
+
+    // Отправляем email и пароль на backend.
+    const data = await login(email, password);
+
+    // Сохраняем авторизованного пользователя.
+    setUser(data.user);
+
+    // Загружаем лидов его организации.
+    await fetchLeads();
+
+    // Очищаем пароль после входа.
+    setPassword('');
+
+  } catch (error) {
+
+    // Показываем ошибку на экране.
+    setAuthError(error.message);
+
+  } finally {
+
+    // Возвращаем кнопку в обычное состояние.
+    setLoginLoading(false);
+  }
+}
 
   // ==================================================
   // УВЕДОМЛЕНИЯ
@@ -83,6 +182,12 @@ function App() {
  async function handleEnableNotifications() {
 
   console.log('🔔 Нажата кнопка уведомлений');
+
+  // Проверяем, вошёл ли пользователь в CRM.
+if (!user) {
+  alert('Сначала войдите в CRM.');
+  return;
+}
 
   // Проверяем, поддерживает ли браузер уведомления.
   if (!('Notification' in window)) {
@@ -148,7 +253,8 @@ try {
       `${import.meta.env.VITE_API_URL}/api/push/subscribe`,
       {
         method: 'POST',
-
+         // Передаём cookie с JWT на backend.
+  credentials: 'include',
         headers: {
           'Content-Type':
             'application/json',
@@ -402,6 +508,62 @@ async function handleDeleteLead(id) {
   // ==================================================
   // ОТОБРАЖЕНИЕ
   // ==================================================
+
+  // Пока проверяем авторизацию — не показываем CRM.
+if (authLoading) {
+  return (
+    <div className="auth-screen">
+      <h2>Проверяем авторизацию...</h2>
+    </div>
+  );
+}
+
+// Если пользователя нет — показываем форму входа.
+if (!user) {
+  return (
+    <div className="auth-screen">
+
+      <form
+        className="auth-card"
+        onSubmit={handleLogin}
+      >
+
+        <h2>Вход в My CRM</h2>
+
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
+          required
+        />
+
+        <input
+          type="password"
+          placeholder="Пароль"
+          value={password}
+          onChange={(event) => setPassword(event.target.value)}
+          required
+        />
+
+        {authError && (
+          <p className="auth-error">
+            {authError}
+          </p>
+        )}
+
+        <button
+          type="submit"
+          disabled={loginLoading}
+        >
+          {loginLoading ? 'Входим...' : 'Войти'}
+        </button>
+
+      </form>
+
+    </div>
+  );
+}
 
   return (
 

@@ -17,7 +17,10 @@ router.get('/', authenticateToken, getLeads);
 
 // Остальные маршруты пока не меняем.
 router.post('/', createLead);
-router.put('/:id/status', updateLeadStatus);
-router.delete('/:id', deleteLead);
+// Обновление статуса — только для авторизованных пользователей.
+router.put('/:id/status', authenticateToken, updateLeadStatus);
+
+// Удаление лида — только для авторизованных пользователей.
+router.delete('/:id', authenticateToken, deleteLead);
 
 module.exports = router;

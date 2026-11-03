@@ -267,16 +267,25 @@ async function getLeads(req, res) {
     }
 }
 
-// Изменение статуса лида.
+// Обновление статуса лида.
 async function updateLeadStatus(req, res) {
-
     try {
-
-        // Получаем ID из URL.
+        // Получаем ID лида из URL.
         const id = Number(req.params.id);
+
+        // Получаем ID организации из авторизации.
+        const organizationId = req.user.organizationId;
 
         // Получаем новый статус.
         const { status } = req.body;
+
+        // Проверяем корректность ID.
+        if (!Number.isInteger(id) || id <= 0) {
+            return res.status(400).json({
+                success: false,
+                error: 'Некорректный ID лида',
+            });
+        }
 
         // Допустимые этапы нашей воронки.
         const allowedStatuses = [
@@ -288,17 +297,15 @@ async function updateLeadStatus(req, res) {
             'LOST',
         ];
 
-        // Проверяем статус.
+        // Проверяем допустимость статуса.
         if (!allowedStatuses.includes(status)) {
-
             return res.status(400).json({
                 success: false,
                 error: 'Недопустимый статус',
             });
         }
 
-       
-        // Обновляем статус.
+        // Обновляем лид только внутри своей организации.
         const result = await dbQuery(
             `
             UPDATE leads
@@ -306,15 +313,14 @@ async function updateLeadStatus(req, res) {
                 status = $1,
                 updated_at = CURRENT_TIMESTAMP
             WHERE id = $2
+              AND organization_id = $3
             RETURNING *;
             `,
-            [status, id]
+            [status, id, organizationId]
         );
 
-
-        // Если лид не найден.
+        // Если лид не найден или принадлежит другой организации.
         if (result.rowCount === 0) {
-
             return res.status(404).json({
                 success: false,
                 error: 'Лид не найден',
@@ -328,7 +334,6 @@ async function updateLeadStatus(req, res) {
         });
 
     } catch (error) {
-
         console.error(
             '❌ Ошибка изменения статуса:',
             error
@@ -343,39 +348,47 @@ async function updateLeadStatus(req, res) {
 
 // Удаление лида.
 async function deleteLead(req, res) {
-
     try {
-
         // Получаем ID лида из URL.
         const id = Number(req.params.id);
 
-        // Удаляем лид из базы данных.
+        // Получаем ID организации из авторизации.
+        const organizationId = req.user.organizationId;
+
+        // Проверяем корректность ID.
+        if (!Number.isInteger(id) || id <= 0) {
+            return res.status(400).json({
+                success: false,
+                error: 'Некорректный ID лида',
+            });
+        }
+
+        // Удаляем лид только внутри своей организации.
         const result = await dbQuery(
             `
             DELETE FROM leads
             WHERE id = $1
+              AND organization_id = $2
             RETURNING *;
             `,
-            [id]
+            [id, organizationId]
         );
 
-        // Если такого лида нет.
+        // Если лид не найден или принадлежит другой организации.
         if (result.rowCount === 0) {
-
             return res.status(404).json({
                 success: false,
                 error: 'Лид не найден',
             });
         }
 
-        // Возвращаем удалённого лида.
+        // Возвращаем удалённый лид.
         return res.json({
             success: true,
             lead: result.rows[0],
         });
 
     } catch (error) {
-
         console.error(
             '❌ Ошибка удаления лида:',
             error
