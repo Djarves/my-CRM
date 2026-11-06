@@ -75,6 +75,74 @@ export async function login(email, password) {
     return data;
 }
 
+// Выходим из аккаунта пользователя.
+export async function logout() {
+
+    // Отправляем POST-запрос на backend.
+    const response = await fetch(
+        `${API_URL}/api/auth/logout`,
+        {
+            method: 'POST',
+
+            // Передаём cookie, чтобы backend мог её удалить.
+            credentials: 'include',
+        }
+    );
+
+    // Получаем ответ backend.
+    const data = await response.json();
+
+    // Проверяем, успешно ли прошёл выход.
+    if (!response.ok) {
+        throw new Error(
+            data.error || data.message || 'Ошибка выхода из аккаунта'
+        );
+    }
+
+    // Возвращаем результат выхода.
+    return data;
+}
+
+// Регистрируем нового пользователя и его организацию.
+export async function register(name, email, password, organizationName) {
+
+    // Отправляем POST-запрос на backend.
+    const response = await fetch(
+        `${API_URL}/api/auth/register`,
+        {
+            method: 'POST',
+
+            // Разрешаем браузеру принять cookie с JWT.
+            credentials: 'include',
+
+            // Передаём данные в формате JSON.
+            headers: {
+                'Content-Type': 'application/json',
+            },
+
+            // Отправляем данные регистрации.
+            body: JSON.stringify({
+                name,
+                email,
+                password,
+                organizationName,
+            }),
+        }
+    );
+
+    // Получаем ответ backend.
+    const data = await response.json();
+
+    // Проверяем, успешно ли прошла регистрация.
+    if (!response.ok) {
+        throw new Error(
+            data.error || data.message || 'Ошибка регистрации'
+        );
+    }
+
+    // Возвращаем данные созданного пользователя.
+    return data;
+}
 
 // Получаем все лиды.
 export async function getLeads() {

@@ -43,6 +43,8 @@ const pushRoutes = require('./routes/push.routes');
 // Подключаем маршруты авторизации.
 const authRoutes = require('./routes/auth.routes');
 
+// Подключаем маршруты глобального управления SKLAD.
+const platformRoutes = require('./routes/platform.routes');
 
 // Создаём Express-приложение.
 const app = express();
@@ -90,7 +92,8 @@ app.use('/api/auth', authRoutes);
 // Подключаем маршруты API.
 app.use('/api/leads', leadsRoutes);
 app.use('/api/push', pushRoutes);
-
+// Подключаем API глобального управления платформой.
+app.use('/api/platform', platformRoutes);
 
 
 // ==================================================

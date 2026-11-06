@@ -4,6 +4,7 @@ const router = express.Router();
 // Подключаем контроллеры заявок.
 const {
     createLead,
+    createPublicLead,
     getLeads,
     updateLeadStatus,
     deleteLead
@@ -15,8 +16,12 @@ const authenticateToken = require('../middleware/auth');
 // Получение заявок — только для авторизованных пользователей.
 router.get('/', authenticateToken, getLeads);
 
-// Остальные маршруты пока не меняем.
-router.post('/', createLead);
+// Публичное создание заявки из конфигуратора.
+router.post('/public', createPublicLead);
+
+// Создание заявки из авторизованной CRM.
+router.post('/', authenticateToken, createLead);
+
 // Обновление статуса — только для авторизованных пользователей.
 router.put('/:id/status', authenticateToken, updateLeadStatus);
 

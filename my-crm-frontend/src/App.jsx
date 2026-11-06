@@ -10,6 +10,8 @@ import {
   deleteLead,
   getMe,
   login,
+  logout,
+  register,
 } from './services/api';
 
 function App() {
@@ -20,6 +22,17 @@ function App() {
 
   // Данные текущего пользователя.
 const [user, setUser] = useState(null);
+
+// Определяем режим окна авторизации.
+// login — вход, register — регистрация.
+const [authMode, setAuthMode] = useState('login');
+
+// Имя нового пользователя.
+// Имя пользователя при регистрации.
+const [registerName, setRegisterName] = useState('');
+
+// Название организации нового пользователя.
+const [organizationName, setOrganizationName] = useState('');
 
 // Данные организации пользователя.
 const [organization, setOrganization] = useState(null);
@@ -175,6 +188,81 @@ async function handleLogin(event) {
   }
 }
 
+// Регистрируем нового пользователя.
+async function handleRegister(event) {
+
+  // Не даём форме перезагрузить страницу.
+  event.preventDefault();
+
+  // Сбрасываем предыдущую ошибку.
+  setAuthError('');
+
+  try {
+
+    // Показываем, что регистрация выполняется.
+    setLoginLoading(true);
+
+    // Отправляем данные регистрации на backend.
+    const data = await register(
+  registerName,
+  email,
+  password,
+  organizationName
+);
+
+    // Сохраняем авторизованного пользователя.
+    setUser(data.user);
+
+    // Загружаем заявки его организации.
+    await fetchLeads();
+
+    // Очищаем пароль.
+    setPassword('');
+
+  } catch (error) {
+
+    // Показываем ошибку регистрации.
+    setAuthError(error.message);
+
+  } finally {
+
+    // Возвращаем кнопку в обычное состояние.
+    setLoginLoading(false);
+  }
+}
+
+// Выход пользователя из CRM.
+async function handleLogout() {
+
+  try {
+
+    // Отправляем запрос на backend для удаления cookie.
+    await logout();
+
+    // Удаляем пользователя из состояния React.
+    setUser(null);
+
+    // Очищаем список лидов.
+    setLeads([]);
+
+    // Закрываем открытую карточку лида.
+    setSelectedLead(null);
+
+    // Очищаем возможную ошибку авторизации.
+    setAuthError('');
+
+    // Очищаем пароль.
+    setPassword('');
+
+  } catch (error) {
+
+    // Показываем ошибку, если выйти не удалось.
+    console.error('Ошибка выхода:', error);
+
+    setAuthError(error.message);
+  }
+}
+
   // ==================================================
   // УВЕДОМЛЕНИЯ
   // ==================================================
@@ -183,11 +271,6 @@ async function handleLogin(event) {
 
   console.log('🔔 Нажата кнопка уведомлений');
 
-  // Проверяем, вошёл ли пользователь в CRM.
-if (!user) {
-  alert('Сначала войдите в CRM.');
-  return;
-}
 
   // Проверяем, поддерживает ли браузер уведомления.
   if (!('Notification' in window)) {
@@ -518,18 +601,75 @@ if (authLoading) {
   );
 }
 
-// Если пользователя нет — показываем форму входа.
+// Если пользователя нет — показываем форму авторизации.
 if (!user) {
   return (
     <div className="auth-screen">
 
       <form
         className="auth-card"
-        onSubmit={handleLogin}
+        onSubmit={
+          authMode === 'login'
+            ? handleLogin
+            : handleRegister
+        }
       >
 
-        <h2>Вход в My CRM</h2>
+        {/* Название платформы. */}
+        <h2>Авторизация</h2>
 
+        {/* Переключение между входом и регистрацией. */}
+        <div className="auth-tabs">
+
+          <button
+            type="button"
+            onClick={() => {
+              setAuthMode('login');
+              setAuthError('');
+            }}
+          >
+            Вход
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setAuthMode('register');
+              setAuthError('');
+            }}
+          >
+            Регистрация
+          </button>
+
+        </div>
+
+        {/* Поле имени показываем только при регистрации. */}
+        {authMode === 'register' && (
+          <input
+            type="text"
+            placeholder="Ваше имя"
+            value={registerName}
+            onChange={(event) =>
+              setRegisterName(event.target.value)
+            }
+            required
+          />
+        )}
+
+        {/* Поле организации показываем только при регистрации. */}
+        {authMode === 'register' && (
+          <input
+            type="text"
+            placeholder="Название организации"
+            value={organizationName}
+            onChange={(event) =>
+              setOrganizationName(event.target.value)
+            }
+            required
+          />
+        )}
+
+        {/* Email нужен для обоих режимов. */}
         <input
           type="email"
           placeholder="Email"
@@ -538,6 +678,7 @@ if (!user) {
           required
         />
 
+        {/* Пароль нужен для обоих режимов. */}
         <input
           type="password"
           placeholder="Пароль"
@@ -546,17 +687,23 @@ if (!user) {
           required
         />
 
+        {/* Показываем сообщение об ошибке. */}
         {authError && (
           <p className="auth-error">
             {authError}
           </p>
         )}
 
+        {/* Кнопка отправки формы. */}
         <button
           type="submit"
           disabled={loginLoading}
         >
-          {loginLoading ? 'Входим...' : 'Войти'}
+          {loginLoading
+            ? 'Подождите...'
+            : authMode === 'login'
+              ? 'Войти'
+              : 'Зарегистрироваться'}
         </button>
 
       </form>
@@ -572,9 +719,24 @@ if (!user) {
       <header className="crm-header">
 
   <h1>
-    📊 Моя Fullstack CRM-система
+    📊 SKLAD
   </h1>
-
+{/* Кнопка перехода в панель Super Admin. */}
+{user.platformRole === 'super_admin' && (
+  <button
+    onClick={() => {
+      window.location.href = '/super-admin';
+    }}
+  >
+    ⚙️ Панель Super Admin
+  </button>
+)}
+      {/* Кнопка выхода из аккаунта. */}
+  <button
+    onClick={handleLogout}
+  >
+    🚪 Выйти
+  </button>
   <button
     onClick={handleEnableNotifications}
   >

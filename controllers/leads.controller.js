@@ -17,9 +17,20 @@ const {
 
 
 // Создание нового лида.
-async function createLead(req, res) {
+async function createLeadForOrganization(
+    req,
+    res,
+    organizationId
+) {
 
     try {
+
+       if (!organizationId || !Number.isSafeInteger(Number(organizationId)) || Number(organizationId) <= 0) {
+    return res.status(403).json({
+        success: false,
+        error: 'Некорректная организация',
+    });
+}
 
         // Получаем данные из тела запроса.
         const {
@@ -47,52 +58,54 @@ async function createLead(req, res) {
         const price = calculatePrice(options);
 
         // SQL-запрос для создания лида.
-        const queryText = `
-            INSERT INTO leads (
-                name,
-                phone,
-                email,
-                business_type,
-                goal,
-                description,
-                options,
-                budget,
-                price_from,
-                price_to,
-                source
-            )
-            VALUES (
-                $1,
-                $2,
-                $3,
-                $4,
-                $5,
-                $6,
-                $7,
-                $8,
-                $9,
-                $10,
-                $11
-            )
-            RETURNING *;
-        `;
+       const queryText = `
+    INSERT INTO leads (
+        organization_id,
+        name,
+        phone,
+        email,
+        business_type,
+        goal,
+        description,
+        options,
+        budget,
+        price_from,
+        price_to,
+        source
+    )
+    VALUES (
+        $1,
+        $2,
+        $3,
+        $4,
+        $5,
+        $6,
+        $7,
+        $8,
+        $9,
+        $10,
+        $11,
+        $12
+    )
+    RETURNING *;
+`;
 
         // Передаём значения отдельно от SQL.
         // Это защищает запрос от SQL-инъекций.
-        const values = [
-            name,
-            phone || null,
-            email || null,
-            businessType || null,
-            goal || null,
-            description || null,
-            options || {},
-            budget || 0,
-            price.priceFrom,
-            price.priceTo,
-            source || 'configurator',
-        ];
-
+       const values = [
+    organizationId,          // $1 — ID организации
+    name,                    // $2 — имя клиента
+    phone || null,           // $3 — телефон
+    email || null,           // $4 — электронная почта
+    businessType || null,    // $5 — тип бизнеса
+    goal || null,            // $6 — цель проекта
+    description || null,     // $7 — описание
+    options || {},           // $8 — выбранные параметры
+    budget || 0,             // $9 — бюджет
+    price.priceFrom,         // $10 — минимальная цена
+    price.priceTo,           // $11 — максимальная цена
+    source || 'configurator' // $12 — источник заявки
+];
         // Отправляем запрос в PostgreSQL.
         const result = await dbQuery(
             queryText,
@@ -102,16 +115,21 @@ async function createLead(req, res) {
         // Получаем созданного лида.
         const lead = result.rows[0];
 
+        if (!lead) {
+    throw new Error('PostgreSQL не вернул созданную заявку');
+}
+
         // Отправляем Push-уведомление о новой заявке.
 try {
 
-    // Получаем все Push-подписки из базы.
-    const subscriptionsResult = await dbQuery(
-        `
-            SELECT subscription
-            FROM push_subscriptions;
-        `
-    );
+ const subscriptionsResult = await dbQuery(
+    `
+        SELECT subscription
+        FROM push_subscriptions
+        WHERE organization_id = $1;
+    `,
+    [organizationId]
+);
 
     // Отправляем уведомление каждой подписке.
     for (const row of subscriptionsResult.rows) {
@@ -142,16 +160,17 @@ try {
         pushError.statusCode === 410
     ) {
 
-        await dbQuery(
-            `
-                DELETE FROM push_subscriptions
-                WHERE endpoint = $1;
-            `,
-            [
-                row.subscription.endpoint,
-            ]
-        );
-
+       await dbQuery(
+    `
+        DELETE FROM push_subscriptions
+        WHERE endpoint = $1
+          AND organization_id = $2;
+    `,
+    [
+        row.subscription.endpoint,
+        organizationId,
+    ]
+);
         console.log(
             '🗑️ Недействительная Push-подписка удалена из базы'
         );
@@ -175,17 +194,19 @@ generateAiBrief(lead)
 
     // Обновляем созданного лида
     // и записываем AI-бриф в базу данных.
-    await dbQuery(
-        `
-            UPDATE leads
-            SET ai_brief = $1
-            WHERE id = $2;
-        `,
-        [
-            aiBrief,
-            lead.id,
-        ]
-    );
+   await dbQuery(
+    `
+        UPDATE leads
+        SET ai_brief = $1
+        WHERE id = $2
+          AND organization_id = $3;
+    `,
+    [
+        aiBrief,
+        lead.id,
+        organizationId,
+    ]
+);
 
     // Показываем сообщение,
     // чтобы убедиться, что запись прошла.
@@ -196,15 +217,10 @@ generateAiBrief(lead)
 
 })
     .catch((error) => {
-        console.error(
-        '❌ Ошибка генерации AI-брифа:',
-                error
-            );
-
-        console.error(
-        '❌ Причина ошибки:',
-        error.cause
-    );
+       console.error(
+    '❌ Ошибка генерации или сохранения AI-брифа:',
+    error
+);
 });
 
 
@@ -228,6 +244,68 @@ generateAiBrief(lead)
     }
 }
 
+// Создание заявки из авторизованной CRM.
+async function createLead(req, res) {
+
+    // Получаем организацию из проверенной авторизации.
+    const organizationId = req.user?.organizationId;
+
+    // Передаём запрос и организацию общей функции.
+    return createLeadForOrganization(
+        req,
+        res,
+        organizationId
+    );
+}
+
+// Создание заявки из публичного конфигуратора.
+async function createPublicLead(req, res) {
+
+    try {
+
+        // Находим организацию Sklad HQ по её уникальному slug.
+        const organizationResult = await dbQuery(
+            `
+                SELECT id
+                FROM organizations
+                WHERE slug = $1
+                LIMIT 1;
+            `,
+            ['sklad-hq']
+        );
+
+        // Проверяем, существует ли организация.
+        if (organizationResult.rows.length === 0) {
+
+            return res.status(500).json({
+                success: false,
+                error: 'Организация Sklad HQ не найдена',
+            });
+        }
+
+        // Получаем настоящий ID организации из базы.
+        const organizationId = organizationResult.rows[0].id;
+
+        // Передаём заявку в общую функцию.
+        return createLeadForOrganization(
+            req,
+            res,
+            organizationId
+        );
+
+    } catch (error) {
+
+        console.error(
+            'Ошибка публичного создания заявки:',
+            error
+        );
+
+        return res.status(500).json({
+            success: false,
+            error: 'Ошибка сервера',
+        });
+    }
+}
 
 // Получаем заявки только текущей организации.
 async function getLeads(req, res) {
@@ -402,8 +480,10 @@ async function deleteLead(req, res) {
 }
 
 // Экспортируем контроллеры.
+// Экспортируем контроллеры.
 module.exports = {
     createLead,
+    createPublicLead,
     getLeads,
     updateLeadStatus,
     deleteLead,

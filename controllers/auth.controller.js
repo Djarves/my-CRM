@@ -322,6 +322,23 @@ async function login(req, res) {
     }
 }
 
+// Функция выхода пользователя из CRM.
+function logout(req, res) {
+
+    // Удаляем авторизационную cookie из браузера.
+    res.clearCookie('token', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/'
+    });
+
+    // Подтверждаем успешный выход.
+    return res.status(200).json({
+        message: 'Выход выполнен успешно'
+    });
+}
+
 // Получаем данные текущего авторизованного пользователя.
 async function getMe(req, res) {
     try {
@@ -338,10 +355,12 @@ async function getMe(req, res) {
                 o.id AS organization_id,
                 o.name AS organization_name,
                 o.slug AS organization_slug,
-                m.role
+                m.role,
+                pa.role AS platform_role
              FROM users u
              JOIN organization_members m ON m.user_id = u.id
              JOIN organizations o ON o.id = m.organization_id
+             LEFT JOIN platform_admins pa ON pa.user_id = u.id
              WHERE u.id = $1 AND o.id = $2
              LIMIT 1`,
             [userId, organizationId]
@@ -362,7 +381,8 @@ async function getMe(req, res) {
             user: {
                 id: user.id,
                 name: user.name,
-                email: user.email
+                email: user.email,
+                platformRole: user.platform_role
             },
             organization: {
                 id: user.organization_id,
@@ -375,7 +395,6 @@ async function getMe(req, res) {
     } catch (error) {
         // Выводим подробность ошибки в терминал сервера.
         console.error('Ошибка получения пользователя:', error.message);
-
         return res.status(500).json({
             message: 'Ошибка сервера'
         });
@@ -383,4 +402,4 @@ async function getMe(req, res) {
 }
 
 // Экспортируем функцию регистрации.
-module.exports = { register, login, getMe };
+module.exports = { register, login, logout, getMe };

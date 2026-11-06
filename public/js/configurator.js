@@ -819,9 +819,7 @@ async function sendLead() {
     try {
 
         // Отправляем данные конфигуратора на сервер
-        const response = await fetch(
-            '/api/leads',
-            {
+        const response = await fetch('/api/leads/public', {
                 method: 'POST',
 
                 headers: {

@@ -37,19 +37,22 @@ async function authenticateToken(req, res, next) {
     try {
 
       // Проверяем пользователя и его членство в организации через БД.
-      const result = await pool.query(
-        `SELECT
-          u.id AS user_id,
-          om.organization_id,
-          om.role
-        FROM users u
-        JOIN organization_members om
-          ON om.user_id = u.id
-        WHERE u.id = $1
-          AND om.organization_id = $2
-        LIMIT 1`,
-        [decoded.sub, decoded.organizationId]
-      );
+     const result = await pool.query(
+  `SELECT
+    u.id AS user_id,
+    om.organization_id,
+    om.role,
+    pa.role AS platform_role
+  FROM users u
+  JOIN organization_members om
+    ON om.user_id = u.id
+  LEFT JOIN platform_admins pa
+    ON pa.user_id = u.id
+  WHERE u.id = $1
+    AND om.organization_id = $2
+  LIMIT 1`,
+  [decoded.sub, decoded.organizationId]
+);
 
       // Если пользователь или его членство не найдены.
       if (result.rows.length === 0) {
@@ -59,12 +62,12 @@ async function authenticateToken(req, res, next) {
       }
 
       // Сохраняем проверенные данные пользователя в запросе.
-      req.user = {
-        sub: String(result.rows[0].user_id),
-        organizationId: String(result.rows[0].organization_id),
-        role: result.rows[0].role
-      };
-
+     req.user = {
+  sub: String(result.rows[0].user_id),
+  organizationId: String(result.rows[0].organization_id),
+  role: result.rows[0].role,
+  platformRole: result.rows[0].platform_role || null
+};
       // Передаём управление следующему обработчику.
       next();
 
