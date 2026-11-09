@@ -231,25 +231,31 @@ async function login(req, res) {
         const normalizedEmail = email.trim().toLowerCase();
 
         // Ищем пользователя и его организацию в базе.
-        const result = await pool.query(
-            `SELECT
-                u.id,
-                u.name,
-                u.email,
-                u.password_hash,
-                o.id AS organization_id,
-                o.name AS organization_name,
-                o.slug AS organization_slug,
-                m.role
-             FROM users u
-             JOIN organization_members m ON m.user_id = u.id
-             JOIN organizations o ON o.id = m.organization_id
-             WHERE LOWER(TRIM(u.email)) = $1
-             ORDER BY m.created_at ASC
-             LIMIT 1`,
-            [normalizedEmail]
-        );
-
+           const result = await pool.query(
+    `SELECT
+        u.id,
+        u.name,
+        u.email,
+        u.password_hash,
+        u.is_blocked AS user_is_blocked,
+        o.id AS organization_id,
+        o.name AS organization_name,
+        o.slug AS organization_slug,
+        o.is_blocked AS organization_is_blocked,
+        m.role,
+        pa.role AS platform_role
+    FROM users u
+    JOIN organization_members m
+        ON m.user_id = u.id
+    JOIN organizations o
+        ON o.id = m.organization_id
+    LEFT JOIN platform_admins pa
+        ON pa.user_id = u.id
+    WHERE LOWER(TRIM(u.email)) = $1
+    ORDER BY m.created_at ASC
+    LIMIT 1`,
+    [normalizedEmail]
+);
         // Если пользователь не найден, возвращаем ошибку входа.
         if (result.rows.length === 0) {
             return res.status(401).json({
@@ -258,7 +264,25 @@ async function login(req, res) {
         }
 
         // Получаем найденную запись.
-        const user = result.rows[0];
+const user = result.rows[0];
+
+        // Проверяем, не заблокирован ли пользователь.
+if (user.user_is_blocked) {
+    return res.status(403).json({
+        message: 'Ваш аккаунт заблокирован. Обратитесь в поддержку SKLAD.'
+    });
+}
+
+// Проверяем блокировку организации.
+// Super Admin сохраняет доступ к управлению платформой.
+if (
+    user.organization_is_blocked &&
+    user.platform_role !== 'super_admin'
+) {
+    return res.status(403).json({
+        message: 'Организация заблокирована. Обратитесь в поддержку SKLAD.'
+    });
+}
 
         // Сравниваем введённый пароль с хешем из базы.
         const passwordIsValid = await bcrypt.compare(

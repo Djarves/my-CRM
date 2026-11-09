@@ -37,21 +37,25 @@ async function authenticateToken(req, res, next) {
     try {
 
       // Проверяем пользователя и его членство в организации через БД.
-     const result = await pool.query(
-  `SELECT
-    u.id AS user_id,
-    om.organization_id,
-    om.role,
-    pa.role AS platform_role
-  FROM users u
-  JOIN organization_members om
-    ON om.user_id = u.id
-  LEFT JOIN platform_admins pa
-    ON pa.user_id = u.id
-  WHERE u.id = $1
-    AND om.organization_id = $2
-  LIMIT 1`,
-  [decoded.sub, decoded.organizationId]
+    const result = await pool.query(
+    `SELECT
+        u.id AS user_id,
+        u.is_blocked AS user_is_blocked,
+        om.organization_id,
+        om.role,
+        o.is_blocked AS organization_is_blocked,
+        pa.role AS platform_role
+    FROM users u
+    JOIN organization_members om
+        ON om.user_id = u.id
+    JOIN organizations o
+        ON o.id = om.organization_id
+    LEFT JOIN platform_admins pa
+        ON pa.user_id = u.id
+    WHERE u.id = $1
+        AND om.organization_id = $2
+    LIMIT 1`,
+    [decoded.sub, decoded.organizationId]
 );
 
       // Если пользователь или его членство не найдены.
@@ -60,6 +64,28 @@ async function authenticateToken(req, res, next) {
           message: 'Нет доступа к этой организации'
         });
       }
+
+      // Получаем проверенные данные из базы.
+const account = result.rows[0];
+
+// Проверяем, не заблокирован ли пользователь.
+if (account.user_is_blocked) {
+    return res.status(403).json({
+        message: 'Ваш аккаунт заблокирован. Обратитесь в поддержку SKLAD.'
+    });
+}
+
+// Проверяем, не заблокирована ли организация.
+// Super Admin может управлять платформой,
+// даже если его собственная организация заблокирована.
+if (
+    account.organization_is_blocked &&
+    account.platform_role !== 'super_admin'
+) {
+    return res.status(403).json({
+        message: 'Организация заблокирована. Обратитесь в поддержку SKLAD.'
+    });
+}
 
       // Сохраняем проверенные данные пользователя в запросе.
      req.user = {

@@ -1,5 +1,15 @@
 import { useState, useEffect } from 'react';
 
+// Подключаем компоненты маршрутизации.
+import { Routes, Route, Navigate } from 'react-router-dom';
+
+// Подключаем отдельную страницу Super Admin.
+import SuperAdmin from './pages/SuperAdmin';
+
+import Organizations from './pages/Organizations';
+
+import Users from './pages/Users';
+
 import './App.css';
 
 // Импортируем функции для работы с backend.
@@ -14,7 +24,7 @@ import {
   register,
 } from './services/api';
 
-function App() {
+function CrmApp() {
 
   // Здесь теперь хранятся НЕ clients,
   // а leads из нашей новой системы.
@@ -1164,5 +1174,31 @@ function KanbanColumn({
   );
 }
 
+
+
+ // Главное приложение SKLAD с маршрутизацией.
+function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<CrmApp />} />
+
+      {/* Главная панель Super Admin */}
+      <Route path="/super-admin" element={<SuperAdmin />} />
+
+      {/* Управление организациями */}
+      <Route
+        path="/super-admin/organizations"
+        element={<Organizations />}
+      />
+      {/* Управление пользователями */}
+<Route
+    path="/super-admin/users"
+    element={<Users />}
+/>
+
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
+}
 
 export default App;

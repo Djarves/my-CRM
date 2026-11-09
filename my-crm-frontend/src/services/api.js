@@ -36,6 +36,179 @@ export async function getMe() {
 }
 
 
+// Проверяем, имеет ли пользователь глобальные права Super Admin.
+export async function checkPlatformAccess() {
+
+    // Отправляем запрос на защищённый маршрут backend.
+    const response = await fetch(
+        `${API_URL}/api/platform/check`,
+        {
+            // Передаём cookie с JWT-токеном.
+            credentials: 'include',
+        }
+    );
+
+    // Получаем ответ сервера.
+    const data = await response.json();
+
+    // Если сервер запретил доступ или вернул другую ошибку.
+    if (!response.ok) {
+        const error = new Error(
+            data.message || 'Нет доступа к панели Super Admin'
+        );
+
+        // Сохраняем HTTP-статус ошибки.
+        error.status = response.status;
+
+        throw error;
+    }
+
+    // Возвращаем подтверждение доступа от backend.
+    return data;
+}
+
+// Получаем общую статистику платформы SKLAD.
+export async function getPlatformStats() {
+    const response = await fetch(
+        `${API_URL}/api/platform/stats`,
+        {
+            credentials: 'include'
+        }
+    );
+
+    const data = await response.json();
+
+    // Проверяем, успешно ли сервер обработал запрос.
+    if (!response.ok) {
+        const error = new Error(
+            data.message ||
+            data.error ||
+            'Не удалось загрузить статистику платформы'
+        );
+
+        error.status = response.status;
+        throw error;
+    }
+
+    return data;
+}
+
+// Получаем список всех организаций платформы.
+export async function getOrganizations() {
+    const response = await fetch(
+        `${API_URL}/api/platform/organizations`,
+        {
+            credentials: 'include'
+        }
+    );
+
+    const data = await response.json();
+
+    // Проверяем результат запроса.
+    if (!response.ok) {
+        const error = new Error(
+            data.message ||
+            data.error ||
+            'Не удалось загрузить организации'
+        );
+
+        error.status = response.status;
+        throw error;
+    }
+
+    return data.organizations;
+}
+
+// Блокируем организацию.
+export async function blockOrganization(id, reason) {
+
+    // Отправляем PATCH-запрос на backend.
+    const response = await fetch(
+        `${API_URL}/api/platform/organizations/${id}/block`,
+        {
+            method: 'PATCH',
+            credentials: 'include',
+
+            // Передаём причину блокировки.
+            headers: {
+                'Content-Type': 'application/json',
+            },
+
+            body: JSON.stringify({
+                reason,
+            }),
+        }
+    );
+
+    // Получаем ответ сервера.
+    const data = await response.json();
+
+    // Проверяем результат запроса.
+    if (!response.ok) {
+        throw new Error(
+            data.message ||
+            data.error ||
+            'Не удалось заблокировать организацию'
+        );
+    }
+
+    return data;
+}
+
+
+// Разблокируем организацию.
+export async function unblockOrganization(id) {
+
+    // Отправляем PATCH-запрос на backend.
+    const response = await fetch(
+        `${API_URL}/api/platform/organizations/${id}/unblock`,
+        {
+            method: 'PATCH',
+            credentials: 'include',
+        }
+    );
+
+    // Получаем ответ сервера.
+    const data = await response.json();
+
+    // Проверяем результат запроса.
+    if (!response.ok) {
+        throw new Error(
+            data.message ||
+            data.error ||
+            'Не удалось разблокировать организацию'
+        );
+    }
+
+    return data;
+}
+
+// Получаем список всех пользователей платформы.
+export async function getPlatformUsers() {
+    const response = await fetch(
+        `${API_URL}/api/platform/users`,
+        {
+            credentials: 'include'
+        }
+    );
+
+    const data = await response.json();
+
+    // Проверяем результат запроса.
+    if (!response.ok) {
+        const error = new Error(
+            data.message ||
+            data.error ||
+            'Не удалось загрузить пользователей'
+        );
+
+        error.status = response.status;
+        throw error;
+    }
+
+    return data.users;
+}
+
 // Авторизуем пользователя.
 export async function login(email, password) {
 
@@ -64,12 +237,12 @@ export async function login(email, password) {
     // Получаем ответ сервера.
     const data = await response.json();
 
-    // Проверяем, успешно ли прошёл вход.
-    if (!response.ok) {
-        throw new Error(
-            data.error || 'Ошибка авторизации'
-        );
-    }
+   // Проверяем, успешно ли прошёл вход.
+if (!response.ok) {
+    throw new Error(
+        data.message || data.error || 'Ошибка авторизации'
+    );
+}
 
     // Возвращаем данные пользователя.
     return data;
