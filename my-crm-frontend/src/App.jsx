@@ -17,12 +17,15 @@ import {
   getLeads,
   createLead,
   updateLeadStatus,
+  updateLead,
   deleteLead,
   getMe,
   login,
   logout,
   register,
 } from './services/api';
+
+import AdminLayout from './components/AdminLayout';
 
 function CrmApp() {
 
@@ -84,7 +87,14 @@ const [loginLoading, setLoginLoading] = useState(false);
   const [name, setName] = useState('');
   const [budget, setBudget] = useState('');
   const [phone, setPhone] = useState('');
-  const [editName, setEditName] = useState('');
+  // Поля редактирования выбранного лида.
+const [editName, setEditName] = useState('');
+const [editPhone, setEditPhone] = useState('');
+const [editEmail, setEditEmail] = useState('');
+const [editBudget, setEditBudget] = useState('');
+
+// Показывает, выполняется ли сохранение лида.
+const [isSavingLead, setIsSavingLead] = useState(false);
 
 
   // ==================================================
@@ -341,52 +351,59 @@ console.log(
 
 try {
 
-  const response =
-    await fetch(
-      `${import.meta.env.VITE_API_URL}/api/push/subscribe`,
-      {
-        method: 'POST',
-         // Передаём cookie с JWT на backend.
-  credentials: 'include',
-        headers: {
-          'Content-Type':
-            'application/json',
-        },
+  // Отправляем Push-подписку на backend.
+  const response = await fetch(
+    `${import.meta.env.VITE_API_URL}/api/push/subscribe`,
+    {
+      method: 'POST',
 
-        body:
-          JSON.stringify(subscription),
-      }
-    );
+      // Передаём cookie с JWT на backend.
+      credentials: 'include',
 
-  console.log(
-    '📡 Ответ backend:',
-    response.status
+      headers: {
+        'Content-Type': 'application/json',
+      },
+
+      body: JSON.stringify(subscription),
+    }
   );
 
-  const data =
-    await response.json();
+  // Получаем ответ backend.
+  const data = await response.json();
 
-  console.log(
-    '📡 Данные от backend:',
-    data
+  // Проверяем, успешно ли сохранена подписка.
+  if (!response.ok) {
+    throw new Error(
+      data.message || `Ошибка сервера: ${response.status}`
+    );
+  }
+
+  console.log('✅ Push-подписка сохранена:', data);
+
+  // Показываем уведомление только после успешного ответа.
+  registration.showNotification(
+    'SKLAD',
+    {
+      body: 'Push-подписка успешно сохранена! 🔔',
+      icon: '/icons/icon-192.png',
+    }
   );
 
 } catch (error) {
 
+  // Записываем ошибку в консоль.
   console.error(
-    '❌ Ошибка отправки подписки:',
+    '❌ Ошибка сохранения Push-подписки:',
     error
   );
-}
 
-  // Тестовое локальное уведомление оставляем.
-  registration.showNotification(
-    'My CRM',
-    {
-      body: 'Push-подписка создана! 🔔',
-      icon: '/icons/icon-192.png',
-    }
+  // Сообщаем пользователю о проблеме.
+  alert(
+    error.message || 'Не удалось сохранить Push-подписку'
   );
+
+  return;
+}
 }
   // ==================================================
   // СОЗДАНИЕ ЛИДА
@@ -598,6 +615,76 @@ async function handleDeleteLead(id) {
 }
 
 
+// Сохраняем изменения лида.
+async function handleSaveLead() {
+
+  // Проверяем, выбран ли лид.
+  if (!selectedLead) {
+    return;
+  }
+
+  // Проверяем, что имя не пустое.
+  if (!editName.trim()) {
+    alert('Имя клиента обязательно');
+    return;
+  }
+
+  try {
+
+    // Блокируем повторное нажатие кнопки.
+    setIsSavingLead(true);
+
+
+    // Отправляем все изменённые данные на backend.
+const data = await updateLead(
+  selectedLead.id,
+  {
+    name: editName.trim(),
+    phone: editPhone.trim(),
+    email: editEmail.trim(),
+    budget: editBudget === ''
+      ? null
+      : Number(editBudget),
+  }
+);
+
+    // Получаем обновлённого лида.
+    const updatedLead = data.lead;
+    // Проверяем, какие данные вернул backend.
+console.log('Ответ backend:', updatedLead);
+
+    // Обновляем лид в общем списке CRM.
+    setLeads((previousLeads) =>
+      previousLeads.map((lead) =>
+        lead.id === updatedLead.id
+          ? updatedLead
+          : lead
+      )
+    );
+
+    // Обновляем открытую карточку.
+    setSelectedLead(updatedLead);
+
+    // Закрываем режим редактирования.
+    setIsEditing(false);
+
+  } catch (error) {
+
+    console.error(
+      'Ошибка сохранения лида:',
+      error
+    );
+
+    alert(error.message || 'Не удалось сохранить изменения');
+
+  } finally {
+
+    // Разрешаем повторное сохранение.
+    setIsSavingLead(false);
+  }
+}
+
+
   // ==================================================
   // ОТОБРАЖЕНИЕ
   // ==================================================
@@ -729,7 +816,7 @@ if (!user) {
       <header className="crm-header">
 
   <h1>
-    📊 SKLAD
+     SKLAD
   </h1>
 {/* Кнопка перехода в панель Super Admin. */}
 {user.platformRole === 'super_admin' && (
@@ -952,35 +1039,106 @@ if (!user) {
         {selectedLead.status}
       </p>
 
-        <button
-          className="btn-edit-lead"
-          onClick={() => {
-             // Берём имя выбранного лида и кладём его в поле редактирования.
-              setEditName(selectedLead.name || '');
-              setIsEditing(true);
-            console.log('✏️ Редактируем лид:', selectedLead);
-          }}
-        >
-          ✏️ Редактировать
-        </button>
+       <button
+  className="btn-edit-lead"
+  onClick={() => {
 
-       {isEditing && (
-        <div className="edit-form">
+    // Заполняем форму данными выбранного лида.
+    setEditName(selectedLead.name || '');
+    setEditPhone(selectedLead.phone || '');
+    setEditEmail(selectedLead.email || '');
+    setEditBudget(
+      selectedLead.budget !== null &&
+      selectedLead.budget !== undefined
+        ? String(selectedLead.budget)
+        : ''
+    );
 
-          <label>
-            Имя:
+    // Открываем режим редактирования.
+    setIsEditing(true);
 
-            <input
-              type="text"
-              value={editName}
-              onChange={(event) => {
-                setEditName(event.target.value);
-             }}
-            />
-          </label>
+    console.log('✏️ Редактируем лид:', selectedLead);
+  }}
+>
+  ✏️ Редактировать
+</button>
 
-           </div>
-        )}
+{isEditing && (
+  <div className="edit-form">
+
+    {/* Имя клиента. */}
+    <label>
+      Имя:
+
+      <input
+        type="text"
+        value={editName}
+        onChange={(event) => {
+          setEditName(event.target.value);
+        }}
+      />
+    </label>
+
+    {/* Телефон клиента. */}
+    <label>
+      Телефон:
+
+      <input
+        type="tel"
+        value={editPhone}
+        onChange={(event) => {
+          setEditPhone(event.target.value);
+        }}
+      />
+    </label>
+
+    {/* Email клиента. */}
+    <label>
+      Email:
+
+      <input
+        type="email"
+        value={editEmail}
+        onChange={(event) => {
+          setEditEmail(event.target.value);
+        }}
+      />
+    </label>
+
+    {/* Бюджет клиента. */}
+    <label>
+      Бюджет (₽):
+
+      <input
+        type="number"
+        min="0"
+        value={editBudget}
+        onChange={(event) => {
+          setEditBudget(event.target.value);
+        }}
+      />
+    </label>
+
+    {/* Сохранение изменений. */}
+    <button
+      onClick={handleSaveLead}
+      disabled={isSavingLead}
+    >
+      {isSavingLead ? 'Сохраняем...' : '💾 Сохранить'}
+    </button>
+
+    {/* Отмена редактирования. */}
+    <button
+      onClick={() => {
+        setIsEditing(false);
+      }}
+      disabled={isSavingLead}
+    >
+      Отмена
+    </button>
+
+  </div>
+)}
 
       <p>
         <strong>Описание:</strong>
@@ -1177,28 +1335,45 @@ function KanbanColumn({
 
 
  // Главное приложение SKLAD с маршрутизацией.
+
 function App() {
-  return (
-    <Routes>
-      <Route path="/" element={<CrmApp />} />
+    return (
+        <Routes>
 
-      {/* Главная панель Super Admin */}
-      <Route path="/super-admin" element={<SuperAdmin />} />
+            {/* Основная CRM остаётся без изменений */}
+            <Route path="/" element={<CrmApp />} />
 
-      {/* Управление организациями */}
-      <Route
-        path="/super-admin/organizations"
-        element={<Organizations />}
-      />
-      {/* Управление пользователями */}
-<Route
-    path="/super-admin/users"
-    element={<Users />}
-/>
+            {/* Общая оболочка административной панели */}
+            <Route path="/super-admin" element={<AdminLayout />}>
 
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
-  );
+                {/* Главная страница Super Admin */}
+                <Route index element={<SuperAdmin />} />
+
+                {/* Управление организациями */}
+                <Route
+                    path="organizations"
+                    element={<Organizations />}
+                />
+
+                {/* Управление пользователями */}
+                <Route
+                    path="users"
+                    element={<Users />}
+                />
+
+            </Route>
+
+            {/* Несуществующие страницы перенаправляем в CRM */}
+            <Route
+                path="*"
+                element={<Navigate to="/" replace />}
+            />
+
+        </Routes>
+    );
 }
 
 export default App;
+
+
+

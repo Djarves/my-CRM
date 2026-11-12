@@ -1,67 +1,189 @@
-/* Основная страница организаций */
+
+/* ========================================
+   СТРАНИЦА ОРГАНИЗАЦИЙ SKLAD
+======================================== */
+
 .organizations-page {
-    min-height: 100vh;
-    padding: 40px;
-    background: #f5f7fb;
-    color: #172033;
+    width: 100%;
+    min-height: 100%;
+    background: transparent;
+    color: #f1f5fc;
     font-family: Arial, sans-serif;
+    box-sizing: border-box;
 }
 
 /* Заголовок */
+
 .organizations-header {
-    margin-bottom: 35px;
+    margin-bottom: 32px;
 }
 
 .organizations-header h1 {
     margin: 0 0 10px;
-    font-size: 30px;
+    color: #f1f5fc;
+    font-size: 28px;
     font-weight: 700;
 }
 
 .organizations-header p {
     margin: 0;
-    color: #718096;
+    color: #94a3b8;
     font-size: 14px;
 }
 
 /* Список организаций */
+
 .organizations-list {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 20px;
+    gap: 22px;
 }
 
 /* Карточка организации */
+
 .organization-card {
-    padding: 25px;
-    background: #ffffff;
-    border: 1px solid #e8edf5;
-    border-radius: 14px;
-    box-shadow: 0 4px 15px rgba(25, 42, 70, 0.04);
+    position: relative;
+    overflow: hidden;
+    min-width: 0;
+    padding: 26px;
+
+    background: linear-gradient(145deg, #1b2b49, #17243b);
+    border: 1px solid #2b3d5d;
+    border-radius: 16px;
+
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+    transition: 0.25s ease;
 }
+
+.organization-card:hover {
+    transform: translateY(-3px);
+    border-color: #3478f6;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2);
+}
+
+/* Название организации */
 
 .organization-card h2 {
-    margin: 0 0 20px;
+    margin: 0 0 22px;
+    color: #f1f5fc;
     font-size: 20px;
-}
-
-.organization-card p {
-    margin: 10px 0;
-    color: #718096;
-    font-size: 14px;
+    font-weight: 600;
     overflow-wrap: anywhere;
 }
 
+/* Информация */
+
+.organization-card p {
+    margin: 13px 0;
+    color: #aab8cf;
+    font-size: 13px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+/* Статусы */
+
+.organization-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+
+    margin-top: 15px !important;
+    padding: 7px 12px;
+
+    border-radius: 20px;
+    font-size: 12px !important;
+    font-weight: 600;
+}
+
+.organization-status--active {
+    background: rgba(34, 197, 94, 0.12);
+    border: 1px solid rgba(34, 197, 94, 0.25);
+    color: #4ade80 !important;
+}
+
+.organization-status--blocked {
+    background: rgba(239, 68, 68, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    color: #f87171 !important;
+}
+
+/* Причина блокировки */
+
+.organization-card p:has(+ .organization-action-button--unblock) {
+    color: #fca5a5;
+}
+
+/* Кнопки управления */
+
+.organization-action-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 40px;
+    margin-top: 12px;
+    padding: 0 18px;
+
+    border: none;
+    border-radius: 9px;
+
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 600;
+
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.organization-action-button--block {
+    background: #b83242;
+}
+
+.organization-action-button--block:hover {
+    background: #dc3545;
+    transform: translateY(-2px);
+}
+
+.organization-action-button--unblock {
+    background: #167a50;
+}
+
+.organization-action-button--unblock:hover {
+    background: #16a36a;
+    transform: translateY(-2px);
+}
+
+.organization-action-button:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    transform: none;
+}
+
 /* Планшеты */
-@media (max-width: 900px) {
+
+@media (max-width: 1000px) {
     .organizations-list {
         grid-template-columns: 1fr;
     }
 }
 
 /* Телефоны */
+
 @media (max-width: 600px) {
-    .organizations-page {
+    .organizations-header h1 {
+        font-size: 23px;
+    }
+
+    .organization-card {
         padding: 20px;
+    }
+
+    .organization-card h2 {
+        font-size: 18px;
+    }
+
+    .organization-action-button {
+        width: 100%;
     }
 }

@@ -169,7 +169,13 @@ function Organizations() {
                         </p>
 
                         {/* Статус организации. */}
-<p>
+<p
+    className={`organization-status ${
+        organization.is_blocked
+            ? 'organization-status--blocked'
+            : 'organization-status--active'
+    }`}
+>
     Статус: {
         organization.is_blocked
             ? 'Заблокирована'
@@ -186,8 +192,9 @@ function Organizations() {
 
 {/* Кнопки управления блокировкой. */}
 {organization.is_blocked ? (
-    <button
-        onClick={() => handleUnblockOrganization(organization)}
+   <button
+    className="organization-action-button organization-action-button--unblock"
+    onClick={() => handleUnblockOrganization(organization)}
         disabled={processingId === organization.id}
     >
         {processingId === organization.id
@@ -196,7 +203,8 @@ function Organizations() {
     </button>
 ) : (
     <button
-        onClick={() => handleBlockOrganization(organization)}
+    className="organization-action-button organization-action-button--block"
+    onClick={() => handleBlockOrganization(organization)}
         disabled={processingId === organization.id}
     >
         {processingId === organization.id

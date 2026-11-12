@@ -1,3 +1,5 @@
 node_modules/
 .env
 cookies.txt
+# Локальные файлы Service Worker для разработки
+dev-dist/

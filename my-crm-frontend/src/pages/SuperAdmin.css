@@ -1,30 +1,61 @@
-/* Основная страница Super Admin */
+
+/* ========================================
+   ГЛАВНАЯ ПАНЕЛЬ SKLAD
+======================================== */
+
 .super-admin {
-    min-height: 100vh;
-    padding: 40px;
-    background: #f5f7fb;
-    color: #172033;
+    width: 100%;
+    min-height: 100%;
+    color: #f1f5fc;
     font-family: Arial, sans-serif;
 }
 
-/* Заголовок страницы */
+/* Заголовок */
+
 .super-admin-header {
-    margin-bottom: 35px;
+    margin-bottom: 38px;
 }
 
 .super-admin-header h1 {
-    margin: 0 0 10px;
+    margin: 0 0 12px;
+    color: #f1f5fc;
     font-size: 30px;
     font-weight: 700;
 }
 
 .super-admin-header p {
-    margin: 0;
-    color: #718096;
-    font-size: 14px;
+    margin: 0 0 10px;
+    color: #aab8cf;
+    font-size: 15px;
 }
 
-/* Сетка карточек */
+.super-admin-header span {
+    display: inline-block;
+    padding: 7px 12px;
+    border: 1px solid #2b4d78;
+    border-radius: 8px;
+    background: rgba(52, 120, 246, 0.12);
+    color: #75a9ff;
+    font-size: 12px;
+}
+
+/* Секции */
+
+.super-admin-section {
+    margin-bottom: 38px;
+}
+
+.super-admin-section > h2 {
+    margin: 0 0 20px;
+    color: #f1f5fc;
+    font-size: 21px;
+    font-weight: 600;
+}
+
+/* ========================================
+   СТАТИСТИКА
+======================================== */
+
 .super-admin-stats {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -32,95 +63,148 @@
 }
 
 /* Карточка статистики */
+
 .super-admin-card {
+    min-width: 0;
     padding: 25px;
-    background: #ffffff;
-    border: 1px solid #e8edf5;
-    border-radius: 14px;
-    box-shadow: 0 4px 15px rgba(25, 42, 70, 0.04);
+
+    background: linear-gradient(
+        145deg,
+        #1b2b49,
+        #17243b
+    );
+
+    border: 1px solid #2b3d5d;
+    border-radius: 15px;
+
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+
+    transition: 0.25s ease;
+}
+
+.super-admin-card:hover {
+    transform: translateY(-3px);
+    border-color: #3478f6;
 }
 
 .super-admin-card h3 {
     margin: 0 0 18px;
-    color: #718096;
+    color: #aab8cf;
     font-size: 14px;
     font-weight: 500;
 }
 
 .super-admin-card p {
     margin: 0;
-    color: #172033;
-    font-size: 32px;
+    color: #ffffff;
+    font-size: 34px;
     font-weight: 700;
 }
 
-/* Адаптация под планшеты */
-@media (max-width: 1000px) {
-    .super-admin-stats {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
+/* ========================================
+   УПРАВЛЕНИЕ ПЛАТФОРМОЙ
+======================================== */
+
+.super-admin-navigation {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
 }
 
-/* Адаптация под телефоны */
-@media (max-width: 600px) {
-    .super-admin {
-        padding: 20px;
-    }
+/* Карточки перехода */
 
-    .super-admin-stats {
-        grid-template-columns: 1fr;
-    }
-}
-
-/* Карточка навигации Super Admin */
 .super-admin-navigation-card {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 20px;
-    box-sizing: border-box;
+
     min-width: 0;
-    width: 100%;
+    padding: 26px;
 
-    margin-top: 25px;
-    padding: 25px;
+    background: linear-gradient(
+        145deg,
+        #1b2b49,
+        #17243b
+    );
 
-    background: #ffffff;
-    border: 1px solid #e8edf5;
-    border-radius: 14px;
+    border: 1px solid #2b3d5d;
+    border-radius: 15px;
 
-    color: #172033;
+    color: #f1f5fc;
     text-decoration: none;
 
-    box-shadow: 0 4px 15px rgba(25, 42, 70, 0.04);
-
-    transition: 0.2s ease;
+    transition: 0.25s ease;
 }
 
-/* Заголовок карточки */
-.super-admin-navigation-card h2 {
-    margin: 0 0 8px;
-    font-size: 20px;
+.super-admin-navigation-card:hover {
+    transform: translateY(-3px);
+    border-color: #3478f6;
+    background: #203455;
 }
 
-/* Описание */
+.super-admin-navigation-card h3 {
+    margin: 0 0 10px;
+    color: #ffffff;
+    font-size: 18px;
+}
+
 .super-admin-navigation-card p {
     margin: 0;
-    color: #718096;
-    font-size: 14px;
+    color: #aab8cf;
+    font-size: 13px;
+    line-height: 1.5;
 }
 
-/* Ссылка перехода */
 .super-admin-navigation-card span {
-    color: #2563eb;
-    font-weight: 600;
-    white-space: nowrap;
     flex-shrink: 0;
+    color: #75a9ff;
+    font-size: 13px;
+    font-weight: 600;
 }
 
-/* Эффект при наведении */
-.super-admin-navigation-card:hover {
-    border-color: #2563eb;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(25, 42, 70, 0.08);
+/* ========================================
+   ПЛАНШЕТЫ
+======================================== */
+
+@media (max-width: 1100px) {
+    .super-admin-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+/* ========================================
+   ТЕЛЕФОНЫ
+======================================== */
+
+@media (max-width: 600px) {
+    .super-admin-header h1 {
+        font-size: 24px;
+    }
+
+    .super-admin-stats {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+
+    .super-admin-navigation {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+
+    .super-admin-card {
+        padding: 20px;
+    }
+
+    .super-admin-card p {
+        font-size: 28px;
+    }
+
+    .super-admin-navigation-card {
+        padding: 20px;
+    }
+
+    .super-admin-navigation-card span {
+        font-size: 12px;
+    }
 }

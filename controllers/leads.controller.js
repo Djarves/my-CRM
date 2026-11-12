@@ -382,7 +382,6 @@ async function updateLeadStatus(req, res) {
                 error: 'Недопустимый статус',
             });
         }
-
         // Обновляем лид только внутри своей организации.
         const result = await dbQuery(
             `
@@ -414,6 +413,94 @@ async function updateLeadStatus(req, res) {
     } catch (error) {
         console.error(
             '❌ Ошибка изменения статуса:',
+            error
+        );
+
+        return res.status(500).json({
+            success: false,
+            error: 'Ошибка сервера',
+        });
+    }
+}
+
+
+// Редактирование данных лида.
+// Редактирование данных лида.
+async function updateLead(req, res) {
+    try {
+        const id = Number(req.params.id);
+        const organizationId = req.user.organizationId;
+
+        // Получаем новые данные из запроса.
+        const { name, phone, email, budget } = req.body;
+        // Проверяем ID лида.
+        if (!Number.isSafeInteger(id) || id <= 0) {
+            return res.status(400).json({
+                success: false,
+                error: 'Некорректный ID лида',
+            });
+        }
+
+        // Проверяем имя клиента.
+        if (typeof name !== 'string' || !name.trim()) {
+            return res.status(400).json({
+                success: false,
+                error: 'Имя клиента обязательно',
+            });
+        }
+
+        // Проверяем бюджет.
+        let parsedBudget = null;
+
+        if (budget !== null && budget !== undefined && budget !== '') {
+            parsedBudget = Number(budget);
+
+            if (!Number.isFinite(parsedBudget) || parsedBudget < 0) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'Некорректное значение бюджета',
+                });
+            }
+        }
+        // Обновляем данные лида только внутри своей организации.
+        const result = await dbQuery(
+            `
+            UPDATE leads
+            SET
+                name = $1,
+                phone = $2,
+                email = $3,
+                budget = $4,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = $5
+              AND organization_id = $6
+            RETURNING *;
+            `,
+            [
+                name.trim(),
+                phone?.trim() || null,
+                email?.trim() || null,
+                parsedBudget,
+                id,
+                organizationId
+            ]
+        );
+
+        // Проверяем, найден ли лид.
+        if (result.rowCount === 0) {
+            return res.status(404).json({
+                success: false,
+                error: 'Лид не найден',
+            });
+        }
+
+    return res.json({
+    success: true,
+    lead: result.rows[0],
+});
+    } catch (error) {
+        console.error(
+            '❌ Ошибка редактирования лида:',
             error
         );
 
@@ -480,11 +567,11 @@ async function deleteLead(req, res) {
 }
 
 // Экспортируем контроллеры.
-// Экспортируем контроллеры.
 module.exports = {
     createLead,
     createPublicLead,
     getLeads,
     updateLeadStatus,
+    updateLead,
     deleteLead,
 };

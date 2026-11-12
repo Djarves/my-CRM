@@ -1,0 +1,364 @@
+
+/* ========================================
+   ОСНОВНАЯ ОБОЛОЧКА SKLAD
+======================================== */
+
+.admin-layout {
+    display: flex;
+    width: 100%;
+    min-height: 100vh;
+    background: #101a30;
+    color: #f1f5fc;
+    box-sizing: border-box;
+}
+
+/* ========================================
+   БОКОВАЯ ПАНЕЛЬ
+======================================== */
+
+.admin-sidebar {
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+
+    width: 260px;
+    min-height: 100vh;
+    padding: 28px 18px;
+
+    background: #111d35;
+    border-right: 1px solid #263653;
+}
+
+/* Логотип */
+
+.admin-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    margin-bottom: 55px;
+    padding: 0 8px;
+
+    color: #ffffff;
+    font-size: 21px;
+    font-weight: 700;
+    text-decoration: none;
+    letter-spacing: 1px;
+}
+
+.admin-logo-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 42px;
+    height: 42px;
+
+    border-radius: 12px;
+    background: #3478f6;
+
+    color: #ffffff;
+    font-size: 23px;
+}
+
+.admin-logo small {
+    display: block;
+    margin-top: 5px;
+
+    color: #8494b0;
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0;
+}
+
+/* ========================================
+   НАВИГАЦИЯ
+======================================== */
+
+.admin-navigation {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.admin-navigation-title {
+    margin: 0 0 14px;
+    padding-left: 12px;
+
+    color: #7183a2;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+}
+
+.admin-nav-link {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+
+    padding: 13px 14px;
+
+    border-radius: 9px;
+
+    color: #aab8cf;
+    font-size: 14px;
+    text-decoration: none;
+
+    transition: 0.2s ease;
+}
+
+.admin-nav-link span {
+    width: 22px;
+
+    color: #8295b5;
+    font-size: 19px;
+    text-align: center;
+}
+
+.admin-nav-link:hover {
+    background: #1b2b49;
+    color: #ffffff;
+}
+
+/* Активный раздел */
+
+.admin-nav-link.active {
+    background: #234b8e;
+    color: #ffffff;
+    box-shadow: inset 3px 0 0 #4d91ff;
+}
+
+.admin-nav-link.active span {
+    color: #ffffff;
+}
+
+/* ========================================
+   НИЖНЯЯ ЧАСТЬ БОКОВОЙ ПАНЕЛИ
+======================================== */
+
+.admin-sidebar-bottom {
+    margin-top: auto;
+    padding-top: 30px;
+}
+
+.admin-back-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    padding: 13px 14px;
+
+    border-radius: 9px;
+
+    color: #aab8cf;
+    font-size: 13px;
+    text-decoration: none;
+
+    transition: 0.2s ease;
+}
+
+.admin-back-link:hover {
+    background: #1b2b49;
+    color: #ffffff;
+}
+
+.admin-back-link span {
+    font-size: 20px;
+}
+
+.admin-sidebar-footer {
+    margin-top: 25px;
+    padding: 20px 12px 0;
+
+    border-top: 1px solid #263653;
+
+    color: #8494b0;
+    font-size: 12px;
+}
+
+.admin-sidebar-footer small {
+    display: block;
+    margin-top: 6px;
+
+    color: #60728f;
+    font-size: 11px;
+}
+
+/* ========================================
+   ОСНОВНАЯ РАБОЧАЯ ОБЛАСТЬ
+======================================== */
+
+.admin-main {
+    flex: 1;
+    min-width: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: #101a30;
+}
+
+/* Верхняя панель */
+
+.admin-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+
+    min-height: 105px;
+    padding: 22px 38px;
+
+    background: #14213a;
+    border-bottom: 1px solid #263653;
+}
+
+.admin-topbar-label {
+    color: #6f88b0;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+}
+
+.admin-topbar h2 {
+    margin: 8px 0 0;
+
+    color: #f1f5fc;
+    font-size: 21px;
+    font-weight: 600;
+}
+
+/* Профиль администратора */
+
+.admin-profile {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.admin-profile-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 42px;
+    height: 42px;
+
+    border-radius: 50%;
+    background: #234b8e;
+
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.admin-profile strong {
+    display: block;
+    color: #e8eef9;
+    font-size: 12px;
+}
+
+.admin-profile small {
+    display: block;
+    margin-top: 5px;
+
+    color: #8494b0;
+    font-size: 11px;
+}
+
+/* Содержимое страниц */
+
+.admin-content {
+    flex: 1;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 35px 38px;
+    background: #101a30;
+}
+
+/* ========================================
+   АДАПТАЦИЯ ПОД ПЛАНШЕТЫ
+======================================== */
+
+@media (max-width: 900px) {
+
+    .admin-sidebar {
+        width: 220px;
+    }
+
+    .admin-topbar {
+        padding: 20px;
+    }
+
+    .admin-content {
+        padding: 25px 20px;
+    }
+}
+
+/* ========================================
+   АДАПТАЦИЯ ПОД ТЕЛЕФОНЫ
+======================================== */
+
+@media (max-width: 650px) {
+
+    .admin-layout {
+        flex-direction: column;
+    }
+
+    .admin-sidebar {
+        width: 100%;
+        min-height: auto;
+        box-sizing: border-box;
+        padding: 16px;
+    }
+
+    .admin-logo {
+        margin-bottom: 20px;
+    }
+
+    .admin-navigation {
+        gap: 5px;
+    }
+
+    .admin-navigation-title {
+        margin-bottom: 8px;
+    }
+
+    .admin-nav-link {
+        padding: 11px;
+    }
+
+    .admin-sidebar-bottom {
+        margin-top: 15px;
+        padding-top: 10px;
+    }
+
+    .admin-sidebar-footer {
+        display: none;
+    }
+
+    .admin-topbar {
+        min-height: 80px;
+        padding: 16px;
+    }
+
+    .admin-topbar h2 {
+        font-size: 16px;
+    }
+
+    .admin-profile strong {
+        font-size: 10px;
+    }
+
+    .admin-profile small {
+        font-size: 9px;
+    }
+
+    .admin-profile-avatar {
+        width: 36px;
+        height: 36px;
+    }
+
+    .admin-content {
+        padding: 20px 15px;
+    }
+}

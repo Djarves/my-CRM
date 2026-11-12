@@ -1,67 +1,199 @@
-/* Основная страница пользователей */
+
+/* ========================================
+   ПОЛЬЗОВАТЕЛИ SKLAD
+======================================== */
+
 .users-page {
-    min-height: 100vh;
-    padding: 40px;
-    background: #f5f7fb;
-    color: #172033;
+    width: 100%;
+    min-height: 100%;
+    color: #f1f5fc;
     font-family: Arial, sans-serif;
+    box-sizing: border-box;
 }
 
-/* Заголовок */
+/* Заголовок страницы */
+
 .users-header {
-    margin-bottom: 35px;
+    margin-bottom: 32px;
 }
 
 .users-header h1 {
     margin: 0 0 10px;
-    font-size: 30px;
+    color: #f1f5fc;
+    font-size: 28px;
     font-weight: 700;
 }
 
 .users-header p {
     margin: 0;
-    color: #718096;
+    color: #94a3b8;
     font-size: 14px;
 }
 
-/* Список пользователей */
+/* ========================================
+   СПИСОК ПОЛЬЗОВАТЕЛЕЙ
+======================================== */
+
 .users-list {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 20px;
+    gap: 22px;
 }
 
 /* Карточка пользователя */
+
 .user-card {
-    padding: 25px;
-    background: #ffffff;
-    border: 1px solid #e8edf5;
-    border-radius: 14px;
-    box-shadow: 0 4px 15px rgba(25, 42, 70, 0.04);
+    min-width: 0;
+    padding: 26px;
+
+    background: linear-gradient(
+        145deg,
+        #1b2b49,
+        #17243b
+    );
+
+    border: 1px solid #2b3d5d;
+    border-radius: 16px;
+
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+
+    transition: 0.25s ease;
 }
+
+.user-card:hover {
+    transform: translateY(-3px);
+    border-color: #3478f6;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2);
+}
+
+/* Заблокированный пользователь */
+
+.user-card--blocked {
+    border-color: rgba(239, 68, 68, 0.45);
+}
+
+.user-card--blocked:hover {
+    border-color: #ef4444;
+}
+
+/* Имя пользователя */
 
 .user-card h2 {
-    margin: 0 0 20px;
+    margin: 0 0 22px;
+    color: #ffffff;
     font-size: 20px;
-}
-
-.user-card p {
-    margin: 10px 0;
-    color: #718096;
-    font-size: 14px;
+    font-weight: 600;
     overflow-wrap: anywhere;
 }
 
-/* Планшеты */
-@media (max-width: 900px) {
+/* Информация */
+
+.user-card p {
+    margin: 13px 0;
+    color: #aab8cf;
+    font-size: 13px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+/* Главный администратор */
+
+.user-card p:last-child {
+    color: #75a9ff;
+}
+
+/* ========================================
+   КНОПКИ УПРАВЛЕНИЯ
+======================================== */
+
+.user-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.user-actions button {
+    min-height: 40px;
+    padding: 0 18px;
+
+    border: none;
+    border-radius: 9px;
+
+    background: #b83242;
+    color: #ffffff;
+
+    font-size: 13px;
+    font-weight: 600;
+
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.user-actions button:hover:not(:disabled) {
+    background: #dc3545;
+    transform: translateY(-2px);
+}
+
+.user-actions button:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* ========================================
+   СООБЩЕНИЯ
+======================================== */
+
+.users-message,
+.users-error {
+    margin-bottom: 20px;
+    padding: 13px 16px;
+    border-radius: 9px;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.users-message {
+    background: rgba(34, 197, 94, 0.12);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    color: #4ade80;
+}
+
+.users-error {
+    background: rgba(239, 68, 68, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #f87171;
+}
+
+/* ========================================
+   ПЛАНШЕТЫ
+======================================== */
+
+@media (max-width: 1000px) {
     .users-list {
         grid-template-columns: 1fr;
     }
 }
 
-/* Телефоны */
+/* ========================================
+   ТЕЛЕФОНЫ
+======================================== */
+
 @media (max-width: 600px) {
-    .users-page {
+    .users-header h1 {
+        font-size: 23px;
+    }
+
+    .user-card {
         padding: 20px;
+    }
+
+    .user-card h2 {
+        font-size: 18px;
+    }
+
+    .user-actions button {
+        width: 100%;
     }
 }

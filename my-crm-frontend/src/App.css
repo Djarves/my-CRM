@@ -1,344 +1,607 @@
+
+/* =========================================
+   SKLAD — ОСНОВНОЙ ИНТЕРФЕЙС CRM
+========================================= */
+
 :root {
-  --bg-color: #f4f6f9;
-  --panel-color: #ffffff;
-  --primary-color: #4f46e5;
-  --text-color: #1f2937;
-  --border-color: #e5e7eb;
+    --crm-bg: #0b1220;
+    --crm-panel: #131f33;
+    --crm-panel-light: #1a2942;
+    --crm-border: #263957;
+    --crm-text: #edf3ff;
+    --crm-muted: #91a2bd;
+    --crm-accent: #4389f5;
+    --crm-accent-hover: #3476df;
+    --crm-danger: #ef5350;
+    --crm-success: #22c98b;
 }
 
-body {
-  background-color: var(--bg-color);
-  color: var(--text-color);
-  font-family: 'Inter', sans-serif;
-  margin: 0;
-  padding: 0;
-}
+/* Основная область */
 
 .crm-container {
-  max-width: 1100px;
-  margin: 40px auto;
-  padding: 20px;
+    width: 100%;
+    min-height: 100vh;
+    margin: 0;
+    padding: 30px clamp(16px, 3vw, 42px);
+    background: var(--crm-bg);
+    color: var(--crm-text);
+    font-family: Arial, sans-serif;
+}
+
+/* =========================================
+   ВЕРХНЯЯ ПАНЕЛЬ
+========================================= */
+
+.crm-header {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 14px;
+    width: 100%;
+    margin-bottom: 30px;
+    padding-bottom: 22px;
+    border-bottom: 1px solid var(--crm-border);
 }
 
 .crm-header h1 {
-  font-size: 28px;
-  font-weight: 700;
-  text-align: center;
-  color: #111827;
-  margin-bottom: 30px;
+    margin: 0 auto 0 0;
+    color: #ffffff;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: 1px;
 }
 
-/* СТИЛИ ФОРМЫ */
+.crm-header button {
+    min-height: 42px;
+    padding: 0 17px;
+    border: 1px solid var(--crm-border);
+    border-radius: 9px;
+    background: var(--crm-panel);
+    color: var(--crm-text);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.crm-header button:hover {
+    background: var(--crm-panel-light);
+    border-color: var(--crm-accent);
+}
+
+/* =========================================
+   ФОРМА ДОБАВЛЕНИЯ ЛИДА
+========================================= */
+
 .client-form {
-  background: var(--panel-color);
-  padding: 25px;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-  border: 1px solid var(--border-color);
-  margin-bottom: 40px;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
+    width: 100%;
+    margin-bottom: 30px;
+    padding: 24px;
+    border: 1px solid var(--crm-border);
+    border-radius: 15px;
+    background: linear-gradient(
+        135deg,
+        #172740,
+        #111d31
+    );
 }
 
 .client-form h3 {
-  margin: 0 0 5px 0;
-  color: #374151;
+    margin: 0 0 20px;
+    color: #ffffff;
+    font-size: 19px;
+}
+
+.form-inputs {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1.3fr auto;
+    gap: 12px;
 }
 
 .client-form input {
-  padding: 12px;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  font-size: 15px;
-  outline: none;
-  transition: 0.2s;
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    padding: 0 14px;
+    border: 1px solid var(--crm-border);
+    border-radius: 8px;
+    outline: none;
+    background: #0d192b;
+    color: #ffffff;
+    font-size: 14px;
+    transition: 0.2s;
+}
+
+.client-form input::placeholder {
+    color: #71829e;
 }
 
 .client-form input:focus {
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    border-color: var(--crm-accent);
+    box-shadow: 0 0 0 3px rgba(67, 137, 245, 0.12);
 }
 
 .client-form button {
-  background: var(--primary-color);
-  color: white;
-  border: none;
-  padding: 14px;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: 0.2s;
+    min-height: 44px;
+    padding: 0 22px;
+    border: none;
+    border-radius: 8px;
+    background: var(--crm-accent);
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
 }
 
 .client-form button:hover {
-  background: #4338ca;
+    background: var(--crm-accent-hover);
 }
 
-/* СТИЛИ КАНБАН-ДОСКИ */
+/* =========================================
+   ВОРОНКА ПРОДАЖ — KANBAN
+========================================= */
+
 .kanban-board {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-  align-items: start;
-  margin-top: 30px;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: start;
+    gap: 20px;
+    width: 100%;
 }
 
 .kanban-column {
-  background: #eaedf2;
-  border-radius: 12px;
-  padding: 15px;
-  min-height: 500px;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 350px;
+    padding: 14px;
+    border: 1px solid var(--crm-border);
+    border-radius: 13px;
+    background: #111d30;
 }
 
 .column-header {
-  font-weight: 700;
-  font-size: 16px;
-  padding: 10px 15px;
-  border-radius: 8px;
-  color: white;
-  text-align: center;
+    margin-bottom: 14px;
+    padding: 13px;
+    border: 1px solid #30496e;
+    border-radius: 9px;
+    background: #1c3150;
+    color: #dceaff;
+    font-size: 14px;
+    font-weight: 700;
+    text-align: center;
 }
-
-/* Цвета шапок колонок */
-.column-header.new { background: #4f46e5; }       /* Синий */
-.column-header.in-progress { background: #f59e0b; } /* Оранжевый */
-.column-header.done { background: #10b981; }        /* Зеленый */
 
 .column-body {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
-/* Стили формы в один ряд для экономии места */
-.form-inputs {
-  display: flex;
-  gap: 10px;
-}
-.form-inputs input { flex: 1; }
-.form-inputs button { padding: 12px 25px; }
+/* =========================================
+   КАРТОЧКА ЛИДА
+========================================= */
 
-/* Обновленная карточка */
 .client-card {
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
-  padding: 15px;
-  position: relative;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+    position: relative;
+    padding: 17px;
+    border: 1px solid var(--crm-border);
+    border-radius: 11px;
+    background: linear-gradient(
+        145deg,
+        #1a2a43,
+        #152238
+    );
+    cursor: pointer;
+    transition: 0.2s;
 }
+
+.client-card:hover {
+    transform: translateY(-3px);
+    border-color: #477fc5;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.2);
+}
+
+.client-card h3 {
+    margin: 0 30px 14px 0;
+    color: #ffffff;
+    font-size: 15px;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+}
+
+.client-card p {
+    margin: 8px 0;
+    color: var(--crm-muted);
+    font-size: 13px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.client-card strong {
+    color: #dce7fa;
+}
+
+/* Кнопка удаления */
 
 .btn-delete {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  opacity: 0.3;
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 30px;
+    height: 30px;
+    border: 1px solid transparent;
+    border-radius: 7px;
+    background: transparent;
+    color: #9aacc6;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: 0.2s;
 }
-.btn-delete:hover { opacity: 1; }
 
-.client-card h3 { margin: 0 0 10px 0; font-size: 16px; color: #111827; }
-.client-card p { margin: 5px 0; font-size: 13px; color: #4b5563; }
+.btn-delete:hover {
+    border-color: rgba(239, 83, 80, 0.3);
+    background: rgba(239, 83, 80, 0.12);
+    color: #ff7773;
+    opacity: 1;
+}
 
-/* КНОПКИ ДВИЖЕНИЯ КАРТОЧЕК */
-.btn-move {
-  width: 100%;
-  background: #ffffff;
-  border: 1px solid #4f46e5;
-  color: #4f46e5;
-  padding: 8px;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  margin-top: 10px;
-  transition: 0.2s;
+/* =========================================
+   КНОПКИ УПРАВЛЕНИЯ ЛИДОМ
+========================================= */
+
+.lead-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-top: 15px;
+}
+
+.btn-move,
+.btn-lost {
+    min-height: 34px;
+    padding: 7px 10px;
+    border: 1px solid #385a86;
+    border-radius: 7px;
+    background: #203653;
+    color: #c9ddfa;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
 }
 
 .btn-move:hover {
-  background: #4f46e5;
-  color: white;
-}
-
-/* Кнопка финала */
-.btn-move.font-done {
-  border-color: #f59e0b;
-  color: #f59e0b;
-}
-
-.btn-move.font-done:hover {
-  background: #f59e0b;
-  color: white;
-}
-
-.lead-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 12px;
+    border-color: var(--crm-accent);
+    background: var(--crm-accent);
+    color: #ffffff;
 }
 
 .btn-lost {
-  padding: 6px 10px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
+    border-color: #704044;
+    background: #38242e;
+    color: #ff9996;
 }
 
+.btn-lost:hover {
+    background: #a9363e;
+    color: #ffffff;
+}
 
 /* =========================================
    МОДАЛЬНОЕ ОКНО ЛИДА
-   ========================================= */
+========================================= */
 
 .lead-modal {
-  /* Фиксируем окно относительно всего экрана */
-  position: fixed;
-
-  /* Растягиваем затемнение на весь экран */
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-
-  /* Затемняем страницу под окном */
-  background: rgba(0, 0, 0, 0.55);
-
-  /* Ставим содержимое по центру */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  /* Окно должно находиться поверх CRM */
-  z-index: 1000;
-
-  /* Добавляем небольшие внутренние отступы */
-  padding: 20px;
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(3, 8, 17, 0.82);
+    backdrop-filter: blur(5px);
 }
-
-
-/* Само окно с информацией */
 
 .lead-modal-content {
-  /* Белая карточка */
-  background: #ffffff;
-
-  /* Ограничиваем ширину */
-  width: 100%;
-  max-width: 600px;
-
-  /* Чтобы окно не становилось слишком высоким */
-  max-height: 85vh;
-
-  /* Если информации много — появляется прокрутка */
-  overflow-y: auto;
-
-  /* Скругляем углы */
-  border-radius: 16px;
-
-  /* Внутренние отступы */
-  padding: 30px;
-
-  /* Тень */
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
-
-  /* Чтобы кнопка-крестик позиционировалась относительно окна */
-  position: relative;
-
-  /* Чтобы содержимое не прилипало друг к другу */
-  box-sizing: border-box;
+    position: relative;
+    width: 100%;
+    max-width: 620px;
+    max-height: 85vh;
+    overflow-y: auto;
+    padding: 30px;
+    border: 1px solid var(--crm-border);
+    border-radius: 16px;
+    background: #17263d;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
 }
-
-
-/* Заголовок лида */
 
 .lead-modal-content h2 {
-  margin: 0 40px 25px 0;
-
-  font-size: 24px;
-
-  color: #111827;
+    margin: 0 45px 25px 0;
+    color: #ffffff;
+    font-size: 23px;
+    overflow-wrap: anywhere;
 }
-
-
-/* Обычные строки информации */
 
 .lead-modal-content p {
-  margin: 10px 0;
-
-  font-size: 15px;
-
-  line-height: 1.5;
-
-  color: #4b5563;
+    margin: 12px 0;
+    color: #aebed5;
+    font-size: 14px;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
 }
-
-
-/* Выделяем названия полей */
 
 .lead-modal-content strong {
-  color: #111827;
+    color: #ffffff;
 }
-
-
-/* Кнопка закрытия */
 
 .lead-modal-close {
-  position: absolute;
-
-  top: 15px;
-  right: 15px;
-
-  width: 36px;
-  height: 36px;
-
-  border: none;
-
-  border-radius: 50%;
-
-  background: #f3f4f6;
-
-  color: #374151;
-
-  font-size: 18px;
-
-  cursor: pointer;
-
-  transition: 0.2s;
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--crm-border);
+    border-radius: 9px;
+    background: #223550;
+    color: #ffffff;
+    font-size: 17px;
+    cursor: pointer;
+    transition: 0.2s;
 }
-
-
-/* Наведение на крестик */
 
 .lead-modal-close:hover {
-  background: #e5e7eb;
-
-  transform: scale(1.05);
+    background: #344c6c;
 }
 
+/* Редактирование лида */
 
-/* Делаем карточку визуально кликабельной */
-
-.client-card {
-  cursor: pointer;
-
-  transition:
-    transform 0.2s,
-    box-shadow 0.2s;
+.btn-edit-lead {
+    margin: 12px 0;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 8px;
+    background: var(--crm-accent);
+    color: #ffffff;
+    font-weight: 600;
+    cursor: pointer;
 }
 
+.btn-edit-lead:hover {
+    background: var(--crm-accent-hover);
+}
 
-/* Эффект при наведении */
+.edit-form {
+    margin: 15px 0;
+    padding: 15px;
+    border: 1px solid var(--crm-border);
+    border-radius: 10px;
+    background: #101c2e;
+}
 
-.client-card:hover {
-  transform: translateY(-2px);
+.edit-form label {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    color: #dce7fa;
+}
 
-  box-shadow:
-    0 6px 15px rgba(0, 0, 0, 0.08);
+.edit-form input {
+    width: 100%;
+    min-height: 42px;
+    padding: 10px;
+    border: 1px solid var(--crm-border);
+    border-radius: 7px;
+    outline: none;
+    background: #0b1627;
+    color: #ffffff;
+}
+
+.edit-form input:focus {
+    border-color: var(--crm-accent);
+}
+
+/* =========================================
+   ЭКРАН АВТОРИЗАЦИИ
+========================================= */
+
+.auth-screen {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 100vh;
+    padding: 20px;
+    background:
+        radial-gradient(
+            circle at top right,
+            #1b365a,
+            transparent 45%
+        ),
+        #0b1220;
+}
+
+.auth-card {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+    max-width: 420px;
+    padding: 35px;
+    border: 1px solid var(--crm-border);
+    border-radius: 16px;
+    background: #15243a;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.auth-card h2 {
+    margin: 0 0 10px;
+    color: #ffffff;
+    font-size: 25px;
+    text-align: center;
+}
+
+.auth-tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.auth-tabs button {
+    min-height: 40px;
+    border: 1px solid var(--crm-border);
+    border-radius: 8px;
+    background: #1d304b;
+    color: #c3d1e6;
+    cursor: pointer;
+}
+
+.auth-tabs button:hover {
+    border-color: var(--crm-accent);
+    color: #ffffff;
+}
+
+.auth-card input {
+    width: 100%;
+    min-height: 45px;
+    padding: 0 13px;
+    border: 1px solid var(--crm-border);
+    border-radius: 8px;
+    outline: none;
+    background: #0d192b;
+    color: #ffffff;
+    font-size: 14px;
+}
+
+.auth-card input:focus {
+    border-color: var(--crm-accent);
+}
+
+.auth-card > button[type="submit"] {
+    min-height: 45px;
+    border: none;
+    border-radius: 8px;
+    background: var(--crm-accent);
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.auth-card > button[type="submit"]:hover {
+    background: var(--crm-accent-hover);
+}
+
+.auth-card > button:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
+.auth-error {
+    margin: 0;
+    padding: 10px;
+    border: 1px solid #713c46;
+    border-radius: 8px;
+    background: #38232e;
+    color: #ffaaa7;
+    font-size: 13px;
+}
+
+/* =========================================
+   ПЛАНШЕТЫ
+========================================= */
+
+@media (max-width: 1100px) {
+
+    .kanban-board {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .form-inputs {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+}
+
+/* =========================================
+   ТЕЛЕФОНЫ
+========================================= */
+
+@media (max-width: 600px) {
+
+    .crm-container {
+        padding: 18px 12px;
+    }
+
+    .crm-header {
+        gap: 9px;
+        margin-bottom: 20px;
+    }
+
+    .crm-header h1 {
+        width: 100%;
+        margin-bottom: 8px;
+        font-size: 25px;
+    }
+
+    .crm-header button {
+        flex: 1;
+        padding: 0 9px;
+        font-size: 12px;
+    }
+
+    .client-form {
+        padding: 17px;
+        margin-bottom: 22px;
+    }
+
+    .client-form h3 {
+        font-size: 17px;
+    }
+
+    .form-inputs {
+        grid-template-columns: 1fr;
+    }
+
+    .form-inputs button {
+        width: 100%;
+    }
+
+    /* На телефоне колонки можно прокручивать по горизонтали. */
+
+    .kanban-board {
+        display: grid;
+        grid-auto-flow: column;
+        grid-auto-columns: minmax(270px, 85%);
+        grid-template-columns: none;
+        gap: 12px;
+        overflow-x: auto;
+        padding-bottom: 14px;
+        scroll-snap-type: x mandatory;
+    }
+
+    .kanban-column {
+        min-height: 320px;
+        scroll-snap-align: start;
+    }
+
+    .lead-modal {
+        padding: 10px;
+    }
+
+    .lead-modal-content {
+        padding: 23px 18px;
+        max-height: 90vh;
+    }
+
+    .lead-modal-content h2 {
+        font-size: 20px;
+    }
+
+    .auth-card {
+        padding: 25px 20px;
+    }
+
 }

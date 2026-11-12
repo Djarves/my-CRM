@@ -1,9 +1,13 @@
+
 const express = require('express');
 
 const router = express.Router();
 
 // Подключаем PostgreSQL.
 const pool = require('../db/database');
+
+// Подключаем проверку авторизации.
+const authenticateToken = require('../middleware/auth');
 
 // Подключаем сервис отправки Push.
 const {
@@ -15,56 +19,74 @@ const {
 // СОХРАНЕНИЕ PUSH-ПОДПИСКИ
 // ==================================================
 
-router.post('/subscribe', async (req, res) => {
+// Сначала проверяем авторизацию пользователя.
+router.post('/subscribe', authenticateToken, async (req, res) => {
 
     try {
+
+        // Получаем организацию из проверенной авторизации.
+        const organizationId = req.user.organizationId;
 
         // Получаем Push-подписку от браузера.
         const subscription = req.body;
 
-        // Проверяем, что подписка действительно содержит endpoint.
-        if (!subscription?.endpoint) {
+        // Проверяем структуру подписки.
+        if (
+            !subscription ||
+            typeof subscription.endpoint !== 'string' ||
+            !subscription.endpoint.startsWith('https://') ||
+            !subscription.keys?.p256dh ||
+            !subscription.keys?.auth
+        ) {
 
             return res.status(400).json({
-                message:
-                    'Push-подписка не содержит endpoint',
+                message: 'Некорректная Push-подписка',
             });
         }
 
         console.log(
-            '🔔 Получена Push-подписка:',
-            subscription.endpoint
+            '🔔 Получена Push-подписка для организации:',
+            organizationId
         );
 
-        // Сохраняем подписку в PostgreSQL.
-        //
-        // Если такой endpoint уже существует,
-        // обновляем существующую подписку.
-        await pool.query(
+        // Сохраняем подписку с ID организации.
+        const result = await pool.query(
             `
             INSERT INTO push_subscriptions
-                (endpoint, subscription)
+                (organization_id, endpoint, subscription)
             VALUES
-                ($1, $2)
+                ($1, $2, $3)
             ON CONFLICT (endpoint)
             DO UPDATE SET
                 subscription = EXCLUDED.subscription,
                 updated_at = CURRENT_TIMESTAMP
+            WHERE push_subscriptions.organization_id =
+                  EXCLUDED.organization_id
+            RETURNING id;
             `,
             [
+                organizationId,
                 subscription.endpoint,
                 subscription,
             ]
         );
 
+        // Если endpoint уже принадлежит другой организации,
+        // не разрешаем перезаписать чужую подписку.
+        if (result.rowCount === 0) {
+
+            return res.status(409).json({
+                message:
+                    'Эта Push-подписка уже привязана к другой организации',
+            });
+        }
+
         console.log(
-            '💾 Push-подписка сохранена в PostgreSQL'
+            '💾 Push-подписка сохранена'
         );
 
-        // Отвечаем frontend.
-        res.status(201).json({
-            message:
-                'Push-подписка сохранена',
+        return res.status(201).json({
+            message: 'Push-подписка сохранена',
         });
 
     } catch (error) {
@@ -74,9 +96,8 @@ router.post('/subscribe', async (req, res) => {
             error.message
         );
 
-        res.status(500).json({
-            message:
-                'Не удалось сохранить Push-подписку',
+        return res.status(500).json({
+            message: 'Не удалось сохранить Push-подписку',
         });
     }
 });
@@ -86,50 +107,49 @@ router.post('/subscribe', async (req, res) => {
 // ТЕСТОВАЯ ОТПРАВКА PUSH
 // ==================================================
 
-router.post('/test', async (req, res) => {
+// Тестовый маршрут тоже доступен только авторизованным.
+router.post('/test', authenticateToken, async (req, res) => {
 
     try {
 
-        // Получаем последнюю Push-подписку
-        // из PostgreSQL.
+        // Получаем ID организации из авторизации.
+        const organizationId = req.user.organizationId;
+
+        // Ищем подписку только своей организации.
         const result = await pool.query(
             `
             SELECT subscription
             FROM push_subscriptions
+            WHERE organization_id = $1
             ORDER BY id DESC
-            LIMIT 1
-            `
+            LIMIT 1;
+            `,
+            [organizationId]
         );
 
         // Если подписок нет.
         if (result.rows.length === 0) {
 
             return res.status(404).json({
-                message:
-                    'Push-подписок пока нет',
+                message: 'Push-подписок пока нет',
             });
         }
 
-        // Берём сохранённую подписку.
-        const subscription =
-            result.rows[0].subscription;
+        // Берём подписку своей организации.
+        const subscription = result.rows[0].subscription;
 
         console.log(
-            '📤 Отправляем тестовый Push...'
+            '📤 Отправляем тестовый Push для организации:',
+            organizationId
         );
 
-        // Отправляем настоящее Push-уведомление
-        // через web-push.
+        // Отправляем настоящее Push-уведомление.
         await sendPushNotification(
             subscription,
             {
-                title: 'My CRM 🔔',
-
-                body:
-                    'Это настоящее Push-уведомление с backend!',
-
-                icon:
-                    '/icons/icon-192.png',
+                title: 'SKLAD 🔔',
+                body: 'Это тестовое Push-уведомление!',
+                icon: '/icons/icon-192.png',
             }
         );
 
@@ -137,9 +157,8 @@ router.post('/test', async (req, res) => {
             '✅ Тестовый Push отправлен'
         );
 
-        res.json({
-            message:
-                'Push-уведомление отправлено',
+        return res.json({
+            message: 'Push-уведомление отправлено',
         });
 
     } catch (error) {
@@ -149,9 +168,8 @@ router.post('/test', async (req, res) => {
             error.message
         );
 
-        res.status(500).json({
-            message:
-                'Не удалось отправить Push',
+        return res.status(500).json({
+            message: 'Не удалось отправить Push',
         });
     }
 });

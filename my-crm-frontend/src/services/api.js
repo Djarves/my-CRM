@@ -209,6 +209,70 @@ export async function getPlatformUsers() {
     return data.users;
 }
 
+// Блокируем пользователя платформы.
+export async function blockPlatformUser(id, reason) {
+
+    // Отправляем PATCH-запрос на backend.
+    const response = await fetch(
+        `${API_URL}/api/platform/users/${id}/block`,
+        {
+            method: 'PATCH',
+            credentials: 'include',
+
+            // Передаём причину блокировки.
+            headers: {
+                'Content-Type': 'application/json',
+            },
+
+            body: JSON.stringify({
+                reason,
+            }),
+        }
+    );
+
+    // Получаем ответ сервера.
+    const data = await response.json();
+
+    // Проверяем результат запроса.
+    if (!response.ok) {
+        throw new Error(
+            data.message ||
+            data.error ||
+            'Не удалось заблокировать пользователя'
+        );
+    }
+
+    return data;
+}
+
+
+// Разблокируем пользователя платформы.
+export async function unblockPlatformUser(id) {
+
+    // Отправляем PATCH-запрос на backend.
+    const response = await fetch(
+        `${API_URL}/api/platform/users/${id}/unblock`,
+        {
+            method: 'PATCH',
+            credentials: 'include',
+        }
+    );
+
+    // Получаем ответ сервера.
+    const data = await response.json();
+
+    // Проверяем результат запроса.
+    if (!response.ok) {
+        throw new Error(
+            data.message ||
+            data.error ||
+            'Не удалось разблокировать пользователя'
+        );
+    }
+
+    return data;
+}
+
 // Авторизуем пользователя.
 export async function login(email, password) {
 
@@ -416,6 +480,42 @@ export async function updateLeadStatus(
     // Возвращаем обновлённый лид.
     return data;
 }
+
+
+// Редактируем данные лида.
+export async function updateLead(id, leadData) {
+
+    // Отправляем PUT-запрос на backend.
+    const response = await fetch(
+        `${API_URL}/api/leads/${id}`,
+        {
+            method: 'PUT',
+            credentials: 'include',
+
+            // Передаём данные в формате JSON.
+            headers: {
+                'Content-Type': 'application/json',
+            },
+
+            // Отправляем новые данные лида.
+            body: JSON.stringify(leadData),
+        }
+    );
+
+    // Получаем ответ сервера.
+    const data = await response.json();
+
+    // Проверяем результат запроса.
+    if (!response.ok) {
+        throw new Error(
+            data.error || 'Ошибка редактирования лида'
+        );
+    }
+
+    // Возвращаем обновлённый лид.
+    return data;
+}
+
 
 // Удаление лида.
 export async function deleteLead(id) {

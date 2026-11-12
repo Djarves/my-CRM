@@ -14,6 +14,10 @@ export default defineConfig({
 
     // Настройки PWA.
     VitePWA({
+      devOptions: {
+  enabled: true,
+  type: 'module',
+},
       // Если появится новая версия приложения,
       // service worker сможет обновить её автоматически.
       registerType: 'autoUpdate',

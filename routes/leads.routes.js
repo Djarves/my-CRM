@@ -7,6 +7,7 @@ const {
     createPublicLead,
     getLeads,
     updateLeadStatus,
+    updateLead,
     deleteLead
 } = require('../controllers/leads.controller');
 
@@ -24,6 +25,9 @@ router.post('/', authenticateToken, createLead);
 
 // Обновление статуса — только для авторизованных пользователей.
 router.put('/:id/status', authenticateToken, updateLeadStatus);
+
+// Редактирование данных лида.
+router.put('/:id', authenticateToken, updateLead);
 
 // Удаление лида — только для авторизованных пользователей.
 router.delete('/:id', authenticateToken, deleteLead);
