@@ -4,6 +4,7 @@ const dbQuery = require('../db/query');
 // Подключаем калькулятор.
 const {
     calculatePrice,
+    sanitizeOptions,
 } = require('../services/calculator.service');
 
 // Сервис для генерации AI-брифа.
@@ -20,42 +21,235 @@ const {
 async function createLeadForOrganization(
     req,
     res,
-    organizationId
+    organizationId,
+    source
 ) {
 
     try {
 
-       if (!organizationId || !Number.isSafeInteger(Number(organizationId)) || Number(organizationId) <= 0) {
+  // Проверяем ID организации.
+const safeOrganizationId = Number(organizationId);
+
+if (
+    !Number.isSafeInteger(safeOrganizationId) ||
+    safeOrganizationId <= 0
+) {
+
     return res.status(403).json({
         success: false,
         error: 'Некорректная организация',
     });
 }
 
-        // Получаем данные из тела запроса.
-        const {
-            name,
-            phone,
-            email,
-            businessType,
-            goal,
-            description,
-            budget,
-            options,
-            source,
-        } = req.body;
+// Проверяем допустимый источник заявки.
+if (!['crm', 'configurator'].includes(source)) {
 
-        // Проверяем обязательное поле.
-        if (!name) {
+    return res.status(400).json({
+        success: false,
+        error: 'Некорректный источник заявки',
+    });
 
-            return res.status(400).json({
-                success: false,
-                error: 'Имя обязательно',
-            });
-        }
+}
 
-        // Рассчитываем предварительную цену.
-        const price = calculatePrice(options);
+// Проверяем, что тело запроса — объект.
+if (
+    !req.body ||
+    typeof req.body !== 'object' ||
+    Array.isArray(req.body)
+) {
+    return res.status(400).json({
+        success: false,
+        error: 'Некорректные данные запроса',
+    });
+}
+
+       // Получаем данные из тела запроса.
+const {
+    name,
+    phone,
+    email,
+    businessType,
+    goal,
+    description,
+    budget,
+    options,
+} = req.body;
+
+       // Проверяем имя клиента.
+if (
+    typeof name !== 'string' ||
+    !name.trim() ||
+    name.trim().length > 100
+) {
+
+    return res.status(400).json({
+        success: false,
+        error: 'Укажите имя длиной не более 100 символов',
+    });
+
+}
+
+// Убираем пробелы в начале и конце имени.
+const safeName = name.trim();
+
+// Проверяем телефон, если клиент его указал.
+let safePhone = null;
+
+if (phone !== undefined && phone !== null && phone !== '') {
+
+    if (
+        typeof phone !== 'string' ||
+        phone.trim().length < 5 ||
+        phone.trim().length > 30
+    ) {
+
+        return res.status(400).json({
+            success: false,
+            error: 'Проверьте правильность номера телефона',
+        });
+
+    }
+
+    // Убираем пробелы по краям.
+    safePhone = phone.trim();
+
+}
+
+// Проверяем электронную почту, если клиент её указал.
+let safeEmail = null;
+
+if (email !== undefined && email !== null && email !== '') {
+
+    if (
+        typeof email !== 'string' ||
+        email.trim().length > 254 ||
+        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
+    ) {
+
+        return res.status(400).json({
+            success: false,
+            error: 'Проверьте правильность электронной почты',
+        });
+
+    }
+
+    // Убираем пробелы и приводим адрес к нижнему регистру.
+    safeEmail = email.trim().toLowerCase();
+
+}
+
+// Проверяем бюджет клиента.
+let safeBudget = 0;
+
+if (budget !== undefined && budget !== null && budget !== '') {
+
+    const numericBudget = Number(budget);
+
+    if (
+        !Number.isFinite(numericBudget) ||
+        numericBudget < 0 ||
+        numericBudget > 1000000000
+    ) {
+
+        return res.status(400).json({
+            success: false,
+            error: 'Некорректное значение бюджета',
+        });
+
+    }
+
+    // Сохраняем проверенное числовое значение.
+    safeBudget = numericBudget;
+
+}
+
+// Проверяем тип бизнеса.
+let safeBusinessType = null;
+
+if (businessType !== undefined && businessType !== null && businessType !== '') {
+
+    if (
+        typeof businessType !== 'string' ||
+        businessType.trim().length > 100
+    ) {
+
+        return res.status(400).json({
+            success: false,
+            error: 'Некорректный тип бизнеса',
+        });
+
+    }
+
+    safeBusinessType = businessType.trim();
+
+}
+
+
+// Проверяем цель проекта.
+let safeGoal = null;
+
+if (goal !== undefined && goal !== null && goal !== '') {
+
+    if (
+        typeof goal !== 'string' ||
+        goal.trim().length > 500
+    ) {
+
+        return res.status(400).json({
+            success: false,
+            error: 'Некорректная цель проекта',
+        });
+
+    }
+
+    safeGoal = goal.trim();
+
+}
+
+
+// Проверяем описание проекта.
+let safeDescription = null;
+
+if (description !== undefined && description !== null && description !== '') {
+
+    if (
+        typeof description !== 'string' ||
+        description.trim().length > 3000
+    ) {
+
+        return res.status(400).json({
+            success: false,
+            error: 'Описание проекта слишком длинное или имеет неверный формат',
+        });
+
+    }
+
+    safeDescription = description.trim();
+
+}
+
+// Проверяем структуру параметров конфигуратора.
+if (
+    options !== undefined &&
+    (
+        options === null ||
+        typeof options !== 'object' ||
+        Array.isArray(options)
+    )
+) {
+
+    return res.status(400).json({
+        success: false,
+        error: 'Некорректные параметры конфигуратора',
+    });
+
+}
+
+// Очищаем параметры конфигуратора.
+const safeOptions = sanitizeOptions(options);
+
+// Рассчитываем цену только по проверенным параметрам.
+const price = calculatePrice(safeOptions);
 
         // SQL-запрос для создания лида.
        const queryText = `
@@ -93,18 +287,18 @@ async function createLeadForOrganization(
         // Передаём значения отдельно от SQL.
         // Это защищает запрос от SQL-инъекций.
        const values = [
-    organizationId,          // $1 — ID организации
-    name,                    // $2 — имя клиента
-    phone || null,           // $3 — телефон
-    email || null,           // $4 — электронная почта
-    businessType || null,    // $5 — тип бизнеса
-    goal || null,            // $6 — цель проекта
-    description || null,     // $7 — описание
-    options || {},           // $8 — выбранные параметры
-    budget || 0,             // $9 — бюджет
+    safeOrganizationId,      // $1 — проверенный ID организации
+    safeName, // $2 — проверенное имя клиента
+    safePhone, // $3 — проверенный телефон
+    safeEmail, // $4 — проверенная электронная почта
+    safeBusinessType,        // $5 — проверенный тип бизнеса
+    safeGoal,                // $6 — проверенная цель проекта
+    safeDescription,         // $7 — проверенное описание
+    safeOptions,              // $8 — проверенные параметры
+    safeBudget, // $9 — проверенный бюджет
     price.priceFrom,         // $10 — минимальная цена
     price.priceTo,           // $11 — максимальная цена
-    source || 'configurator' // $12 — источник заявки
+    source, // $12 — проверенный источник заявки
 ];
         // Отправляем запрос в PostgreSQL.
         const result = await dbQuery(
@@ -128,7 +322,7 @@ try {
         FROM push_subscriptions
         WHERE organization_id = $1;
     `,
-    [organizationId]
+    [safeOrganizationId]
 );
 
     // Отправляем уведомление каждой подписке.
@@ -168,7 +362,7 @@ try {
     `,
     [
         row.subscription.endpoint,
-        organizationId,
+        safeOrganizationId,
     ]
 );
         console.log(
@@ -204,7 +398,7 @@ generateAiBrief(lead)
     [
         aiBrief,
         lead.id,
-        organizationId,
+        safeOrganizationId,
     ]
 );
 
@@ -244,17 +438,18 @@ generateAiBrief(lead)
     }
 }
 
-// Создание заявки из авторизованной CRM.
+// Создание заявки внутри CRM.
 async function createLead(req, res) {
 
     // Получаем организацию из проверенной авторизации.
     const organizationId = req.user?.organizationId;
 
-    // Передаём запрос и организацию общей функции.
+    // Передаём запрос, организацию и источник заявки.
     return createLeadForOrganization(
         req,
         res,
-        organizationId
+        organizationId,
+        'crm'
     );
 }
 
@@ -286,12 +481,12 @@ async function createPublicLead(req, res) {
         // Получаем настоящий ID организации из базы.
         const organizationId = organizationResult.rows[0].id;
 
-        // Передаём заявку в общую функцию.
-        return createLeadForOrganization(
-            req,
-            res,
-            organizationId
-        );
+       return createLeadForOrganization(
+    req,
+    res,
+    organizationId,
+    'configurator'
+);
 
     } catch (error) {
 
@@ -358,7 +553,7 @@ async function updateLeadStatus(req, res) {
         const { status } = req.body;
 
         // Проверяем корректность ID.
-        if (!Number.isInteger(id) || id <= 0) {
+        if (!Number.isSafeInteger(id) || id <= 0) {
             return res.status(400).json({
                 success: false,
                 error: 'Некорректный ID лида',
@@ -376,12 +571,15 @@ async function updateLeadStatus(req, res) {
         ];
 
         // Проверяем допустимость статуса.
-        if (!allowedStatuses.includes(status)) {
-            return res.status(400).json({
-                success: false,
-                error: 'Недопустимый статус',
-            });
-        }
+        if (
+    typeof status !== 'string' ||
+    !allowedStatuses.includes(status)
+) {
+    return res.status(400).json({
+        success: false,
+        error: 'Недопустимый статус',
+    });
+}
         // Обновляем лид только внутри своей организации.
         const result = await dbQuery(
             `
@@ -423,16 +621,37 @@ async function updateLeadStatus(req, res) {
     }
 }
 
-
-// Редактирование данных лида.
 // Редактирование данных лида.
 async function updateLead(req, res) {
     try {
         const id = Number(req.params.id);
         const organizationId = req.user.organizationId;
+        // Проверяем структуру тела запроса.
+if (
+    !req.body ||
+    typeof req.body !== 'object' ||
+    Array.isArray(req.body)
+) {
+    return res.status(400).json({
+        success: false,
+        error: 'Некорректные данные запроса',
+    });
+}
+        // Получаем данные запроса.
+const { name, phone, email, budget } = req.body;
 
-        // Получаем новые данные из запроса.
-        const { name, phone, email, budget } = req.body;
+// Проверяем, какие поля действительно переданы.
+const hasName = Object.hasOwn(req.body, 'name');
+const hasPhone = Object.hasOwn(req.body, 'phone');
+const hasEmail = Object.hasOwn(req.body, 'email');
+const hasBudget = Object.hasOwn(req.body, 'budget');
+// Проверяем, что передано хотя бы одно поле для обновления.
+if (!hasName && !hasPhone && !hasEmail && !hasBudget) {
+    return res.status(400).json({
+        success: false,
+        error: 'Не указаны данные для обновления',
+    });
+}
         // Проверяем ID лида.
         if (!Number.isSafeInteger(id) || id <= 0) {
             return res.status(400).json({
@@ -441,51 +660,136 @@ async function updateLead(req, res) {
             });
         }
 
-        // Проверяем имя клиента.
-        if (typeof name !== 'string' || !name.trim()) {
+      // Подготавливаем имя клиента.
+let safeName = null;
+
+// Проверяем имя, только если оно передано.
+if (hasName) {
+
+    if (
+        typeof name !== 'string' ||
+        !name.trim() ||
+        name.trim().length > 100
+    ) {
+        return res.status(400).json({
+            success: false,
+            error: 'Укажите имя длиной не более 100 символов',
+        });
+    }
+
+    // Сохраняем очищенное имя.
+    safeName = name.trim();
+}
+
+// Подготавливаем телефон клиента.
+let safePhone = null;
+
+// Проверяем телефон, только если он передан.
+if (hasPhone) {
+
+    // Пустое значение разрешает очистить телефон.
+    if (phone !== null && phone !== '') {
+
+        if (
+            typeof phone !== 'string' ||
+            phone.trim().length < 5 ||
+            phone.trim().length > 30
+        ) {
             return res.status(400).json({
                 success: false,
-                error: 'Имя клиента обязательно',
+                error: 'Некорректный номер телефона',
             });
         }
 
-        // Проверяем бюджет.
-        let parsedBudget = null;
+        // Сохраняем очищенный телефон.
+        safePhone = phone.trim();
+    }
+}
 
-        if (budget !== null && budget !== undefined && budget !== '') {
-            parsedBudget = Number(budget);
+// Подготавливаем email клиента.
+let safeEmail = null;
 
-            if (!Number.isFinite(parsedBudget) || parsedBudget < 0) {
-                return res.status(400).json({
-                    success: false,
-                    error: 'Некорректное значение бюджета',
-                });
-            }
+// Проверяем email, только если он передан.
+if (hasEmail) {
+
+    // Пустое значение разрешает очистить email.
+    if (email !== null && email !== '') {
+
+        if (typeof email !== 'string') {
+            return res.status(400).json({
+                success: false,
+                error: 'Некорректный email',
+            });
         }
+
+        const normalizedEmail = email.trim().toLowerCase();
+
+        if (
+            normalizedEmail.length > 254 ||
+            !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)
+        ) {
+            return res.status(400).json({
+                success: false,
+                error: 'Укажите корректный email',
+            });
+        }
+
+        // Сохраняем нормализованный email.
+        safeEmail = normalizedEmail;
+    }
+}
+
+    // Подготавливаем бюджет.
+let parsedBudget = null;
+
+// Проверяем бюджет, только если он передан.
+if (hasBudget) {
+
+    // Пустое значение разрешает очистить бюджет.
+    if (budget !== null && budget !== '') {
+
+        parsedBudget = Number(budget);
+
+        if (
+            !Number.isFinite(parsedBudget) ||
+            parsedBudget < 0 ||
+            parsedBudget > 1_000_000_000
+        ) {
+            return res.status(400).json({
+                success: false,
+                error: 'Бюджет должен быть от 0 до 1 000 000 000',
+            });
+        }
+    }
+}
+
         // Обновляем данные лида только внутри своей организации.
         const result = await dbQuery(
-            `
-            UPDATE leads
-            SET
-                name = $1,
-                phone = $2,
-                email = $3,
-                budget = $4,
-                updated_at = CURRENT_TIMESTAMP
-            WHERE id = $5
-              AND organization_id = $6
-            RETURNING *;
-            `,
-            [
-                name.trim(),
-                phone?.trim() || null,
-                email?.trim() || null,
-                parsedBudget,
-                id,
-                organizationId
-            ]
-        );
-
+    `
+    UPDATE leads
+    SET
+        name = CASE WHEN $1 THEN $2 ELSE name END,
+        phone = CASE WHEN $3 THEN $4 ELSE phone END,
+        email = CASE WHEN $5 THEN $6 ELSE email END,
+        budget = CASE WHEN $7 THEN $8 ELSE budget END,
+        updated_at = CURRENT_TIMESTAMP
+    WHERE id = $9
+      AND organization_id = $10
+    RETURNING *;
+    `,
+    [
+        hasName,
+        safeName,
+        hasPhone,
+        safePhone,
+        hasEmail,
+        safeEmail,
+        hasBudget,
+        parsedBudget,
+        id,
+        organizationId
+    ]
+);
         // Проверяем, найден ли лид.
         if (result.rowCount === 0) {
             return res.status(404).json({
@@ -521,7 +825,7 @@ async function deleteLead(req, res) {
         const organizationId = req.user.organizationId;
 
         // Проверяем корректность ID.
-        if (!Number.isInteger(id) || id <= 0) {
+        if (!Number.isSafeInteger(id) || id <= 0) {
             return res.status(400).json({
                 success: false,
                 error: 'Некорректный ID лида',

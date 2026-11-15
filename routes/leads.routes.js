@@ -14,11 +14,14 @@ const {
 // Подключаем проверку авторизации.
 const authenticateToken = require('../middleware/auth');
 
+// Подключаем ограничитель публичных заявок.
+const { publicLeadLimiter } = require('../middleware/rateLimiter');
+
 // Получение заявок — только для авторизованных пользователей.
 router.get('/', authenticateToken, getLeads);
 
 // Публичное создание заявки из конфигуратора.
-router.post('/public', createPublicLead);
+router.post('/public', publicLeadLimiter, createPublicLead);
 
 // Создание заявки из авторизованной CRM.
 router.post('/', authenticateToken, createLead);

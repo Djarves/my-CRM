@@ -770,44 +770,72 @@ function showResultStep() {
 // РАСЧЁТ СТОИМОСТИ
 // ========================================
 
+
 function calculatePrice() {
 
-    // Начальная стоимость сайта
-    let price = 15000;
+    // Разрешённые разделы сайта.
+    const allowedSections = [
+        'Главная',
+        'Услуги',
+        'Цены',
+        'О компании',
+        'Отзывы',
+        'Контакты',
+    ];
 
+    // Цены дополнительных функций.
+    const featurePrices = {
+        'Форма заявки': 1500,
+        'Онлайн-запись': 3500,
+        'Карта': 500,
+        'Галерея': 1000,
+        'Отзывы': 500,
+    };
 
-    // Каждый дополнительный раздел
-    // увеличивает стоимость
-    price += configuratorData.sections.length * 3000;
+    // Убираем возможные повторения разделов.
+    const sections = [
+        ...new Set(configuratorData.sections)
+    ];
 
+    // Убираем возможные повторения функций.
+    const features = [
+        ...new Set(configuratorData.features)
+    ];
 
-    // Каждая дополнительная функция
-    // тоже увеличивает стоимость
-    price += configuratorData.features.length * 5000;
+    // Базовая стоимость сайта.
+    let price = 10000;
 
+    // Считаем только дополнительные разделы.
+    const additionalSections = sections.filter(
+        (section) =>
+            allowedSections.includes(section) &&
+            section !== 'Главная'
+    );
 
-    // Некоторые функции могут стоить дороже
-    if (
-        configuratorData.features.includes(
-            'Онлайн-запись'
-        )
-    ) {
-        price += 5000;
-    }
+    // Каждый дополнительный раздел — 700 ₽.
+    price += additionalSections.length * 700;
 
+    // Добавляем стоимость выбранных функций.
+    features.forEach((feature) => {
 
-    // Формируем диапазон цены
-    const priceFrom = price;
+        if (
+            Object.prototype.hasOwnProperty.call(
+                featurePrices,
+                feature
+            )
+        ) {
+            price += featurePrices[feature];
+        }
 
-    const priceTo = price + 10000;
+    });
 
-
-    // Возвращаем результат
+    // Возвращаем диапазон стоимости.
     return {
-        priceFrom,
-        priceTo,
+        priceFrom: price,
+        priceTo: price + 5000,
     };
 }
+
 
 
 // ========================================

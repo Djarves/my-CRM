@@ -31,17 +31,6 @@ async function sendPushNotification(
         error.message
     );
 
-    // 404 и 410 означают,
-    // что Push-подписка больше недействительна.
-    if (
-        error.statusCode === 404 ||
-        error.statusCode === 410
-    ) {
-
-        console.log(
-            '🗑️ Push-подписка больше недействительна'
-        );
-    }
 
     // Передаём ошибку дальше,
     // чтобы вызывающий код мог её обработать.

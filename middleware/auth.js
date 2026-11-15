@@ -10,6 +10,17 @@ async function authenticateToken(req, res, next) {
   // Получаем JWT из HttpOnly cookie.
   const token = req.cookies?.token;
 
+  // Проверяем наличие секретного ключа JWT.
+if (!process.env.JWT_SECRET) {
+
+    console.error('❌ JWT_SECRET не задан в настройках сервера');
+
+    return res.status(500).json({
+        message: 'Ошибка конфигурации авторизации'
+    });
+
+}
+
   // Если cookie отсутствует, пользователь не авторизован.
   if (!token) {
     return res.status(401).json({
@@ -27,12 +38,21 @@ async function authenticateToken(req, res, next) {
       });
     }
 
-    // Проверяем, что в токене есть ID пользователя и организации.
-    if (!decoded.sub || !decoded.organizationId) {
-      return res.status(403).json({
+   // Преобразуем ID пользователя и организации в числа.
+const userId = Number(decoded.sub);
+const organizationId = Number(decoded.organizationId);
+
+// Проверяем корректность идентификаторов.
+if (
+    !Number.isSafeInteger(userId) ||
+    userId <= 0 ||
+    !Number.isSafeInteger(organizationId) ||
+    organizationId <= 0
+) {
+    return res.status(403).json({
         message: 'Некорректные данные авторизации'
-      });
-    }
+    });
+}
 
     try {
 
@@ -55,7 +75,7 @@ async function authenticateToken(req, res, next) {
     WHERE u.id = $1
         AND om.organization_id = $2
     LIMIT 1`,
-    [decoded.sub, decoded.organizationId]
+    [userId, organizationId]
 );
 
       // Если пользователь или его членство не найдены.

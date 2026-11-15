@@ -6,14 +6,18 @@ const router = express.Router();
 
 // Подключаем проверку JWT-токена.
 const authenticateToken = require('../middleware/auth');
-
-// Подключаем функцию регистрации.
 // Подключаем функции регистрации, входа, выхода и получения пользователя.
 const { register, login, logout, getMe } = require('../controllers/auth.controller');
-// Маршрут регистрации нового пользователя.
-router.post('/register', register);
-// Маршрут для входа пользователя.
-router.post('/login', login);
+// Подключаем ограничители регистрации и входа.
+const {
+    registerLimiter,
+    loginLimiter
+} = require('../middleware/rateLimiter');
+// Регистрация: максимум 5 запросов за 15 минут.
+router.post('/register', registerLimiter, register);
+
+// Вход: максимум 10 запросов за 15 минут.
+router.post('/login', loginLimiter, login);
 // Маршрут для выхода пользователя из CRM.
 router.post('/logout', logout);
 // Получение данных текущего авторизованного пользователя.

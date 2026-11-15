@@ -48,6 +48,8 @@ const platformRoutes = require('./routes/platform.routes');
 
 // Создаём Express-приложение.
 const app = express();
+// Учитываем один доверенный прокси перед сервером (Render).
+app.set('trust proxy', 1);
 
 // Порт backend.
 // Render передаст свой PORT через переменную окружения.
@@ -79,7 +81,10 @@ app.use(cors({
 }));
 
 // Позволяем Express читать JSON.
-app.use(express.json());
+// Максимальный размер входящего JSON — 100 КБ.
+app.use(express.json({
+    limit: '100kb',
+}));
 // Позволяем Express читать cookie из запросов.
 app.use(cookieParser());
 
@@ -99,6 +104,55 @@ app.use('/api/platform', platformRoutes);
 app.get('/api/ping', (req, res) => {
     res.status(200).send('pong');
 });
+
+
+ // ==================================================
+ // ГЛОБАЛЬНЫЙ ОБРАБОТЧИК ОШИБОК EXPRESS
+ // ==================================================
+
+app.use((error, req, res, next) => {
+
+    // Если ответ уже начал отправляться,
+    // передаём ошибку стандартному обработчику Express.
+    if (res.headersSent) {
+        return next(error);
+    }
+
+    // Ошибка: размер запроса превышает установленный лимит.
+    if (error.type === 'entity.too.large') {
+
+        return res.status(413).json({
+            success: false,
+            error: 'Запрос слишком большой. Максимальный размер — 100 КБ.',
+        });
+
+    }
+
+    // Ошибка: клиент отправил некорректный JSON.
+    if (error.type === 'entity.parse.failed') {
+
+        return res.status(400).json({
+            success: false,
+            error: 'Некорректный формат данных. Проверьте JSON.',
+        });
+
+    }
+
+    // Записываем подробности ошибки в терминал сервера.
+    console.error('❌ Ошибка Express:', {
+        message: error.message,
+        method: req.method,
+        path: req.originalUrl,
+    });
+
+    // Не раскрываем внутренние подробности сервера клиенту.
+    return res.status(500).json({
+        success: false,
+        error: 'Внутренняя ошибка сервера. Попробуйте позже.',
+    });
+
+});
+
 
 // ==================================================
 // СТАРТ СЕРВЕРА
