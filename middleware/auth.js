@@ -10,6 +10,11 @@ async function authenticateToken(req, res, next) {
   // Получаем JWT из HttpOnly cookie.
   const token = req.cookies?.token;
 
+  console.log('Проверка авторизации:', {
+    hasCookieHeader: Boolean(req.headers.cookie),
+    hasTokenCookie: Boolean(token),
+});
+
   // Проверяем наличие секретного ключа JWT.
 if (!process.env.JWT_SECRET) {
 
