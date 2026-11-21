@@ -3,7 +3,7 @@
 const API_URL =
     import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
-    // Проверяем, авторизован ли пользователь.
+// Проверяем, авторизован ли пользователь.
 export async function getMe() {
 
     // Запрашиваем данные текущего пользователя.
@@ -301,12 +301,12 @@ export async function login(email, password) {
     // Получаем ответ сервера.
     const data = await response.json();
 
-   // Проверяем, успешно ли прошёл вход.
-if (!response.ok) {
-    throw new Error(
-        data.message || data.error || 'Ошибка авторизации'
-    );
-}
+    // Проверяем, успешно ли прошёл вход.
+    if (!response.ok) {
+        throw new Error(
+            data.message || data.error || 'Ошибка авторизации'
+        );
+    }
 
     // Возвращаем данные пользователя.
     return data;
@@ -541,4 +541,82 @@ export async function deleteLead(id) {
 
     // Возвращаем результат.
     return data;
+}
+
+// Создаём публичную заявку через универсальный конфигуратор.
+export async function createUniversalLead(slug, leadData) {
+
+    // Отправляем POST-запрос на backend.
+    const response = await fetch(
+        `${API_URL}/api/leads/public/${encodeURIComponent(slug)}`,
+        {
+            method: 'POST',
+
+            // Передаём данные в формате JSON.
+            headers: {
+                'Content-Type': 'application/json',
+            },
+
+            // Преобразуем объект заявки в JSON.
+            body: JSON.stringify(leadData),
+        }
+    );
+
+    // Получаем ответ backend.
+    const data = await response.json();
+
+    // Проверяем результат запроса.
+    if (!response.ok) {
+        throw new Error(
+            data.error || 'Не удалось отправить заявку'
+        );
+    }
+
+    // Возвращаем результат создания заявки.
+    return data;
+}
+
+// Получаем публичную информацию об организации.
+export async function getPublicOrganization(slug) {
+
+    // Отправляем GET-запрос на backend.
+    const response = await fetch(
+        `${API_URL}/api/leads/public/${encodeURIComponent(slug)}`
+    );
+
+    // Получаем ответ сервера.
+    const data = await response.json();
+
+    // Проверяем результат запроса.
+    if (!response.ok) {
+        throw new Error(
+            data.error || 'Не удалось загрузить организацию.'
+        );
+    }
+
+    // Возвращаем данные организации.
+    return data.organization;
+}
+
+
+// Получаем список услуг организации.
+export async function getPublicOrganizationServices(slug) {
+
+    // Отправляем запрос на backend.
+    const response = await fetch(
+        `${API_URL}/api/leads/public/${encodeURIComponent(slug)}/services`
+    );
+
+    // Получаем ответ сервера.
+    const data = await response.json();
+
+    // Проверяем результат запроса.
+    if (!response.ok) {
+        throw new Error(
+            data.error || 'Не удалось загрузить услуги.'
+        );
+    }
+
+    // Возвращаем список услуг.
+    return data.services;
 }

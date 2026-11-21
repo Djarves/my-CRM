@@ -24,8 +24,8 @@ function sanitizeOptions(options = {}) {
     // Принимаем только обычный объект.
     const safeOptions =
         options &&
-        typeof options === 'object' &&
-        !Array.isArray(options)
+            typeof options === 'object' &&
+            !Array.isArray(options)
             ? options
             : {};
 
@@ -39,34 +39,34 @@ function sanitizeOptions(options = {}) {
         ? safeOptions.features
         : [];
 
-   // Оставляем только разрешённые разделы.
-const safeSections = [
-    ...new Set(
-        sections
-            .filter(
-                (section) =>
-                    typeof section === 'string' &&
-                    ALLOWED_SECTIONS.includes(section)
-            )
-            .slice(0, ALLOWED_SECTIONS.length)
-    )
-];
+    // Оставляем только разрешённые разделы.
+    const safeSections = [
+        ...new Set(
+            sections
+                .filter(
+                    (section) =>
+                        typeof section === 'string' &&
+                        ALLOWED_SECTIONS.includes(section)
+                )
+                .slice(0, ALLOWED_SECTIONS.length)
+        )
+    ];
 
-   // Оставляем только разрешённые функции.
-const safeFeatures = [
-    ...new Set(
-        features
-            .filter(
-                (feature) =>
-                    typeof feature === 'string' &&
-                    Object.prototype.hasOwnProperty.call(
-                        FEATURE_PRICES,
-                        feature
-                    )
-            )
-            .slice(0, Object.keys(FEATURE_PRICES).length)
-    )
-];
+    // Оставляем только разрешённые функции.
+    const safeFeatures = [
+        ...new Set(
+            features
+                .filter(
+                    (feature) =>
+                        typeof feature === 'string' &&
+                        Object.prototype.hasOwnProperty.call(
+                            FEATURE_PRICES,
+                            feature
+                        )
+                )
+                .slice(0, Object.keys(FEATURE_PRICES).length)
+        )
+    ];
 
     // Возвращаем очищенные параметры.
     return {

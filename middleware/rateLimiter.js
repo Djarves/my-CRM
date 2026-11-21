@@ -15,6 +15,19 @@ const publicLeadLimiter = rateLimit({
     statusCode: 429,
 });
 
+// Ограничитель для универсального конфигуратора SKLAD.
+const universalLeadLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit: 10,
+    standardHeaders: 'draft-8',
+    legacyHeaders: false,
+    message: {
+        success: false,
+        error: 'Слишком много заявок. Попробуйте через 15 минут.',
+    },
+    statusCode: 429,
+});
+
 // Ограничитель для регистрации.
 const registerLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
@@ -44,6 +57,7 @@ const loginLimiter = rateLimit({
 // Экспортируем все ограничители.
 module.exports = {
     publicLeadLimiter,
+    universalLeadLimiter,
     registerLimiter,
     loginLimiter,
 };

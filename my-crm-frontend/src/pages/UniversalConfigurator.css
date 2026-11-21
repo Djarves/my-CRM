@@ -1,0 +1,375 @@
+
+/* =========================================
+   1. ОСНОВНОЙ ЭКРАН
+========================================= */
+
+.universal-configurator {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+
+    min-height: 100vh;
+    box-sizing: border-box;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 60px 20px;
+
+    background:
+        radial-gradient(
+            circle at 15% 20%,
+            rgba(91, 72, 255, 0.22),
+            transparent 35%
+        ),
+        radial-gradient(
+            circle at 85% 80%,
+            rgba(0, 190, 255, 0.16),
+            transparent 35%
+        ),
+        #090d1a;
+
+    font-family: Inter, Arial, sans-serif;
+}
+
+/* Декоративное свечение на фоне. */
+
+.universal-configurator::before {
+    content: '';
+
+    position: absolute;
+    z-index: -1;
+
+    width: 550px;
+    height: 550px;
+
+    top: -250px;
+    right: -150px;
+
+    border-radius: 50%;
+
+    background: #694cff;
+    filter: blur(180px);
+    opacity: 0.18;
+}
+
+/* =========================================
+   2. ОСНОВНАЯ КАРТОЧКА
+========================================= */
+
+.configurator-card {
+    position: relative;
+
+    width: 100%;
+    max-width: 510px;
+    box-sizing: border-box;
+
+    padding: 48px;
+
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 26px;
+
+    background: linear-gradient(
+        145deg,
+        rgba(30, 38, 65, 0.94),
+        rgba(15, 20, 37, 0.96)
+    );
+
+    backdrop-filter: blur(25px);
+
+    box-shadow:
+        0 30px 90px rgba(0, 0, 0, 0.45),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+
+    animation: configuratorAppear 0.7s ease both;
+}
+
+/* Плавное появление карточки. */
+
+@keyframes configuratorAppear {
+    from {
+        opacity: 0;
+        transform: translateY(25px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* =========================================
+   3. ЗАГОЛОВОК
+========================================= */
+
+.configurator-card h1 {
+    margin: 0 0 18px;
+
+    color: #ffffff;
+
+    font-size: clamp(27px, 5vw, 36px);
+    font-weight: 750;
+    line-height: 1.2;
+    letter-spacing: -1px;
+
+    overflow-wrap: anywhere;
+}
+
+/* =========================================
+   4. ОПИСАНИЕ
+========================================= */
+
+.configurator-card > p {
+    margin: 0 0 35px;
+
+    color: #a4aec8;
+
+    font-size: 15px;
+    line-height: 1.7;
+}
+
+/* =========================================
+   5. ФОРМА
+========================================= */
+
+.configurator-card form {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* =========================================
+   6. ПОДПИСИ ПОЛЕЙ
+========================================= */
+
+.configurator-card label {
+    display: flex;
+    flex-direction: column;
+    gap: 11px;
+
+    color: #e3e9ff;
+
+    font-size: 14px;
+    font-weight: 600;
+}
+
+/* =========================================
+   7. ПОЛЯ ВВОДА
+========================================= */
+
+.configurator-card input {
+    width: 100%;
+    box-sizing: border-box;
+
+    padding: 17px 18px;
+
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: 13px;
+
+    background: rgba(255, 255, 255, 0.045);
+
+    color: #ffffff;
+
+    font-size: 15px;
+
+    outline: none;
+
+    transition:
+        border-color 0.25s,
+        background 0.25s,
+        box-shadow 0.25s;
+}
+
+.configurator-card input::placeholder {
+    color: #697590;
+}
+
+/* Подсветка активного поля. */
+
+.configurator-card input:focus {
+    border-color: #8872ff;
+
+    background: rgba(119, 93, 255, 0.09);
+
+    box-shadow:
+        0 0 0 3px rgba(119, 93, 255, 0.13),
+        0 0 25px rgba(119, 93, 255, 0.10);
+}
+
+/* =========================================
+   8. КНОПКА
+========================================= */
+
+.configurator-card button {
+    position: relative;
+    overflow: hidden;
+
+    width: 100%;
+
+    margin-top: 5px;
+    padding: 18px;
+
+    border: none;
+    border-radius: 13px;
+
+    background: linear-gradient(
+        110deg,
+        #7658ff,
+        #536dff,
+        #328cf5
+    );
+
+    color: #ffffff;
+
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 8px 25px rgba(91, 91, 255, 0.30);
+
+    transition:
+        transform 0.25s,
+        box-shadow 0.25s,
+        filter 0.25s;
+}
+
+.configurator-card button:hover:not(:disabled) {
+    transform: translateY(-3px);
+
+    filter: brightness(1.12);
+
+    box-shadow:
+        0 12px 35px rgba(91, 91, 255, 0.42);
+}
+
+.configurator-card button:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.configurator-card button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* =========================================
+   9. СООБЩЕНИЯ
+========================================= */
+
+.configurator-card .configurator-message {
+    margin: 24px 0 0;
+    padding: 15px 17px;
+
+    border: 1px solid rgba(111, 135, 255, 0.25);
+    border-radius: 12px;
+
+    background: rgba(91, 111, 255, 0.10);
+
+    color: #c5d0ff;
+
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+/* =========================================
+   10. МОБИЛЬНАЯ АДАПТАЦИЯ
+========================================= */
+
+@media (max-width: 520px) {
+
+    .universal-configurator {
+        padding: 25px 15px;
+    }
+
+    .configurator-card {
+        padding: 32px 23px;
+
+        border-radius: 21px;
+    }
+
+    .configurator-card h1 {
+        font-size: 27px;
+    }
+
+    .configurator-card input {
+        padding: 16px;
+    }
+
+    .configurator-card button {
+        padding: 17px;
+    }
+}
+
+/* Каталог услуг. */
+.configurator-services {
+    margin: 32px 0;
+    text-align: left;
+}
+
+/* Заголовок каталога. */
+.configurator-services h2 {
+    color: #ffffff;
+    font-size: 22px;
+    margin-bottom: 20px;
+}
+
+/* Список карточек. */
+.services-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+}
+
+/* Карточка услуги. */
+.service-card {
+    padding: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.08);
+    transition: 0.25s ease;
+}
+
+/* Название услуги. */
+.service-card h3 {
+    color: #ffffff;
+    font-size: 17px;
+    margin-bottom: 12px;
+}
+
+/* Описание услуги. */
+.service-card p {
+    color: #d1d5e0;
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 16px;
+}
+
+/* Стоимость. */
+.service-price {
+    color: #a5b4fc;
+    font-size: 17px;
+    font-weight: 700;
+}
+
+/* Подсветка при наведении. */
+.service-card:hover {
+    border-color: #818cf8;
+    background: rgba(129, 140, 248, 0.13);
+    transform: translateY(-3px);
+}
+
+/* Выбранная услуга. */
+.service-card.selected {
+    border: 2px solid #818cf8;
+    background: rgba(99, 102, 241, 0.22);
+    box-shadow: 0 0 20px rgba(129, 140, 248, 0.2);
+    transform: translateY(-3px);
+}
+
+/* Курсор при наведении на карточку. */
+.service-card {
+    cursor: pointer;
+}
