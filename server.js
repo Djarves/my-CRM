@@ -57,9 +57,12 @@ app.set('trust proxy', 1);
 const PORT = process.env.PORT || 3000;
 
 // Список адресов, которым разрешено обращаться к backend.
+// Список адресов frontend,
+// которым разрешено обращаться к backend.
 const allowedOrigins = [
     'https://my-crm-dashboard.onrender.com',
-    'http://localhost:5173'
+    'http://localhost:5173',
+    'http://localhost:5174'
 ];
 
 // Настраиваем CORS.
